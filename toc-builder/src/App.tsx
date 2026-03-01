@@ -9,7 +9,7 @@ import {
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<'main' | 'memo'>('main');
+  const [activeTab, setActiveTab] = useState<'main' | 'memo' | 'guide' | 'rules'>('main');
 
   const [data, setData] = useState<any>({
     player: '',
@@ -136,18 +136,30 @@ ${data.notes}
         </div>
 
         {/* 现代优雅的活页切换卡 / Sleek Tabs */}
-        <div className="flex bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-8 border border-stone-700/50">
+        <div className="flex flex-wrap bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-4 border border-stone-700/50">
           <button
             onClick={() => setActiveTab('main')}
-            className={`px-8 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'main' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'main' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
           >
             档案卷宗
           </button>
           <button
             onClick={() => setActiveTab('memo')}
-            className={`px-8 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'memo' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'memo' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
           >
             备忘录与装备
+          </button>
+          <button
+            onClick={() => setActiveTab('guide')}
+            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'guide' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+          >
+            创建指南
+          </button>
+          <button
+            onClick={() => setActiveTab('rules')}
+            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'rules' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+          >
+            建卡参考
           </button>
         </div>
 
@@ -177,28 +189,6 @@ ${data.notes}
 
             {activeTab === 'main' && (
               <>
-                {/* Top Section: Guide and Rules */}
-                <div data-html2canvas-ignore="true" className="flex gap-6 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 shadow-sm relative">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                  <div className="flex-1">
-                    <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest text-center">创建调查员简要说明</h2>
-                    <div className="text-[12px] text-slate-800 space-y-2 text-justify font-serif leading-relaxed">
-                      {CREATION_GUIDE.map((p, i) => <p key={i} className="indent-[2em]">{p}</p>)}
-                    </div>
-                  </div>
-                  <div className="w-[1px] bg-[#daaa39] opacity-50 shrink-0"></div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest text-center">建卡参考</h2>
-                    <div className="text-[12px] text-[#695d3e] space-y-1.5 text-justify font-serif leading-[1.4]">
-                      {RULES_NOTES.map((p, i) => <p key={i}>{p}</p>)}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Bottom Section: Left and Right Columns */}
                 <div className="flex gap-6">
                   {/* Left Column (Stats + Info + Occupation) */}
@@ -378,7 +368,7 @@ ${data.notes}
             )}
 
             {activeTab === 'memo' && (
-              <div className="flex flex-col gap-6 w-full min-h-[800px]">
+              <div className="flex flex-row gap-6 w-full min-h-[800px]">
                 {/* 战役备忘录 */}
                 <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col flex-1 relative shadow-sm">
                   <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
@@ -397,7 +387,7 @@ ${data.notes}
                 </div>
 
                 {/* 装备信息 */}
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col h-[300px] shrink-0 relative shadow-sm">
+                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col flex-1 relative shadow-sm">
                   <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
                   <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
                   <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
@@ -411,6 +401,38 @@ ${data.notes}
                     className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[14px] leading-relaxed font-serif focus:bg-[#f6f1d3]/80 transition-all"
                     placeholder="武器、道具、资产、借条等..."
                   />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'guide' && (
+              <div className="flex flex-col gap-6 w-full min-h-[800px]">
+                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-12 flex flex-col flex-1 relative shadow-sm">
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                  <h2 className="text-2xl font-bold text-[#5c4a21] border-b-2 border-[#daaa39] pb-4 mb-8 tracking-[0.2em] text-center font-['STKaiti']">创建调查员简要说明</h2>
+                  <div className="text-[16px] text-slate-800 space-y-6 text-justify font-serif leading-[1.8] px-4 md:px-12">
+                    {CREATION_GUIDE.map((p, i) => <p key={i} className="indent-[2em]">{p}</p>)}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'rules' && (
+              <div className="flex flex-col gap-6 w-full min-h-[800px]">
+                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-12 flex flex-col flex-1 relative shadow-sm">
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                  <h2 className="text-2xl font-bold text-[#5c4a21] border-b-2 border-[#daaa39] pb-4 mb-8 tracking-[0.2em] text-center font-['STKaiti']">建卡参考</h2>
+                  <div className="text-[16px] text-[#695d3e] space-y-4 text-justify font-serif leading-[1.8] px-4 md:px-12 font-bold">
+                    {RULES_NOTES.map((p, i) => <p key={i}>{p}</p>)}
+                  </div>
                 </div>
               </div>
             )}
