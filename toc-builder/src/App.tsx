@@ -32,12 +32,12 @@ function App() {
     setData((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  const handleSkill = (skill: string, value: string) => {
-    setData((prev: any) => ({
-      ...prev,
-      skills: { ...prev.skills, [skill]: value }
-    }));
-  };
+  // const handleSkill = (skill: string, value: string) => {
+  //   setData((prev: any) => ({
+  //     ...prev,
+  //     skills: { ...prev.skills, [skill]: value }
+  //   }));
+  // };
 
   const exportPNG = async () => {
     if (!sheetRef.current) return;
@@ -218,58 +218,99 @@ ${data.notes}
                 </div>
 
                 {/* Skills Grid */}
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative text-[13px]">
-                  <div className="grid grid-cols-3">
+                <div className="grid grid-cols-3 gap-2 mt-2 text-[12px] font-sans">
 
-                    {/* 学术能力 */}
-                    <div className="border-r border-[#daaa39]">
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6]">学术能力</div>
-                      <div className="p-2 space-y-0.5">
-                        {ACADEMIC_SKILLS.map(skill => (
-                          <div key={skill} className="flex">
-                            <span className="w-20 text-[#5c4a21] leading-tight">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800" />
-                          </div>
-                        ))}
-                      </div>
+                  {/* 学术能力 */}
+                  <div className="border border-black">
+                    <div className="bg-[#46823b] text-white font-bold text-center py-1 text-[14px]">学术能力</div>
+                    <div className="grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] bg-[#89b350] border-y border-black font-bold text-center py-0.5 divide-x divide-black text-[13px]">
+                      <div>能力</div><div>本职</div><div>调查</div><div>等级</div><div>剩余</div>
                     </div>
-
-                    {/* 社交能力 & 技术能力 */}
-                    <div className="border-r border-[#daaa39] flex flex-col">
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6]">社交能力</div>
-                      <div className="p-2 space-y-0.5 border-b border-[#daaa39] pb-4">
-                        {SOCIAL_SKILLS.map(skill => (
-                          <div key={skill} className="flex">
-                            <span className="w-20 text-[#5c4a21] leading-tight">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800" />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6]">技术能力</div>
-                      <div className="p-2 space-y-0.5">
-                        {TECH_SKILLS.map(skill => (
-                          <div key={skill} className="flex">
-                            <span className="w-20 text-[#5c4a21] leading-tight">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800" />
-                          </div>
-                        ))}
-                      </div>
+                    <div className="divide-y divide-black bg-[#e9f0df]">
+                      {ACADEMIC_SKILLS.map((skill, index) => (
+                        <div key={skill} className={`grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] divide-x divide-black text-center ${index % 2 === 0 ? 'bg-white' : 'bg-[#e9f0df]'}`}>
+                          <div className="flex items-center justify-center py-[3px] text-[13px]">{skill.replace(/\(\d+\)/, '')}</div>
+                          <div className="flex items-center justify-center font-serif text-[16px] leading-none mb-0.5">{skill === '克苏鲁神话(4)' ? '——' : '☐'}</div>
+                          <div className="py-[1px] bg-white"><input className="w-full h-full bg-transparent text-center outline-none" /></div>
+                          <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                          <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                        </div>
+                      ))}
                     </div>
-
-                    {/* 一般能力 */}
-                    <div>
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6]">一般能力</div>
-                      <div className="p-2 space-y-0.5">
-                        {GENERAL_SKILLS.map(skill => (
-                          <div key={skill} className="flex">
-                            <span className="w-24 text-[#5c4a21] leading-tight">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
                   </div>
+
+                  {/* 社交能力 & 技术能力组合列 */}
+                  <div className="flex flex-col gap-2">
+                    {/* 社交能力 */}
+                    <div className="border border-black">
+                      <div className="bg-[#46823b] text-white font-bold text-center py-1 text-[14px]">社交能力</div>
+                      <div className="grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] bg-[#89b350] border-y border-black font-bold text-center py-0.5 divide-x divide-black text-[13px]">
+                        <div>能力</div><div>本职</div><div>调查</div><div>等级</div><div>剩余</div>
+                      </div>
+                      <div className="divide-y divide-black bg-[#e9f0df]">
+                        {SOCIAL_SKILLS.map((skill, index) => (
+                          <div key={skill} className={`grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] divide-x divide-black text-center ${index % 2 === 0 ? 'bg-white' : 'bg-[#e9f0df]'}`}>
+                            <div className="flex items-center justify-center py-[3px] text-[13px]">{skill}</div>
+                            {skill === '信誉等级' ? (
+                              <div className="py-[1px] bg-transparent"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                            ) : (
+                              <div className="flex items-center justify-center font-serif text-[16px] leading-none mb-0.5">☐</div>
+                            )}
+                            <div className="py-[1px] bg-white"><input className="w-full h-full bg-transparent text-center outline-none" /></div>
+                            <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                            <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 技术能力 */}
+                    <div className="border border-black">
+                      <div className="bg-[#46823b] text-white font-bold text-center py-1 text-[14px]">技术能力</div>
+                      <div className="grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] bg-[#89b350] border-y border-black font-bold text-center py-0.5 divide-x divide-black text-[13px]">
+                        <div>能力</div><div>本职</div><div>调查</div><div>等级</div><div>剩余</div>
+                      </div>
+                      <div className="divide-y divide-black bg-[#e9f0df]">
+                        {TECH_SKILLS.map((skill, index) => (
+                          <div key={skill} className={`grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] divide-x divide-black text-center ${index % 2 === 0 ? 'bg-white' : 'bg-[#e9f0df]'}`}>
+                            <div className="flex items-center justify-center py-[3px] text-[13px]">{skill}</div>
+                            <div className="flex items-center justify-center font-serif text-[16px] leading-none mb-0.5">☐</div>
+                            <div className="py-[1px] bg-white"><input className="w-full h-full bg-transparent text-center outline-none" /></div>
+                            <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                            <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue="0" /></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 一般能力 */}
+                  <div className="border border-black max-h-[1010px]">
+                    <div className="bg-[#46823b] text-white font-bold text-center py-1 text-[14px]">一般能力</div>
+                    <div className="grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] bg-[#89b350] border-y border-black font-bold text-center py-0.5 divide-x divide-black text-[13px]">
+                      <div>能力</div><div>本职</div><div>一般</div><div>等级</div><div>剩余</div>
+                    </div>
+                    <div className="divide-y divide-black bg-[#e9f0df]">
+                      {GENERAL_SKILLS.map((skill, index) => {
+                        const isSpecial = ['健康(9)', '心智(9)', '坚毅(9)'].includes(skill);
+                        const defaultVal = isSpecial ? (skill === '心智(9)' ? '4' : '1') : '0';
+                        return (
+                          <div key={skill} className={`grid grid-cols-[4fr_1.5fr_1.5fr_1.5fr_1.5fr] divide-x divide-black text-center ${index % 2 === 0 ? 'bg-white' : 'bg-[#e9f0df]'}`}>
+                            <div className="flex items-center justify-center py-[2.5px] text-[13px]">{skill.replace(/\(\d+\)/, '')}</div>
+                            {isSpecial ? (
+                              <div className="flex items-center justify-center text-[13px]">{defaultVal}</div>
+                            ) : (
+                              <div className="flex items-center justify-center font-serif text-[16px] leading-none mb-0.5">☐</div>
+                            )}
+                            <div className="py-[1px] bg-white"><input className="w-full h-full bg-transparent text-center outline-none" /></div>
+                            <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue={defaultVal} /></div>
+                            <div className="py-[1px]"><input className="w-full h-full bg-transparent text-center outline-none" defaultValue={defaultVal} /></div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
                 </div>
 
                 {/* Bottom Notes */}
