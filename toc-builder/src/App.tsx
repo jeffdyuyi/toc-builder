@@ -9,6 +9,7 @@ import {
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'main' | 'memo'>('main');
 
   const [data, setData] = useState<any>({
     player: '',
@@ -24,6 +25,8 @@ function App() {
     health: 1,
     sourceOfStability: '',
     notes: '',
+    campaignMemo: '',
+    equipment: '',
     skills: {}
   });
 
@@ -131,6 +134,20 @@ ${data.notes}
               克苏鲁迷踪
             </h1>
           </div>
+          <div className="flex gap-4 md:mr-8 bg-slate-100 p-1.5 rounded outline outline-1 outline-slate-200 mt-4 md:mt-0">
+            <button
+              onClick={() => setActiveTab('main')}
+              className={`px-6 py-1.5 text-sm font-bold rounded flex items-center gap-1 transition-all ${activeTab === 'main' ? 'bg-[#daaa39] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800'}`}
+            >
+              角色卡档案
+            </button>
+            <button
+              onClick={() => setActiveTab('memo')}
+              className={`px-6 py-1.5 text-sm font-bold rounded flex items-center gap-1 transition-all ${activeTab === 'memo' ? 'bg-[#daaa39] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800'}`}
+            >
+              备忘录与装备
+            </button>
+          </div>
           <div className="flex gap-2 mt-4 md:mt-0 shrink-0">
             <button onClick={exportPNG} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm font-medium transition-colors">
               <ImageIcon size={16} /> 导出 PNG
@@ -153,203 +170,245 @@ ${data.notes}
           >
             {/* Header Removed */}
 
-            {/* Top Section: Guide and Rules */}
-            <div data-html2canvas-ignore="true" className="flex gap-6 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 shadow-sm relative">
-              <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-              <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-              <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-              <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+            {activeTab === 'main' && (
+              <>
+                {/* Top Section: Guide and Rules */}
+                <div data-html2canvas-ignore="true" className="flex gap-6 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 shadow-sm relative">
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest text-center">创建调查员简要说明</h2>
-                <div className="text-[12px] text-slate-800 space-y-2 text-justify font-serif leading-relaxed">
-                  {CREATION_GUIDE.map((p, i) => <p key={i} className="indent-[2em]">{p}</p>)}
-                </div>
-              </div>
-              <div className="w-[1px] bg-[#daaa39] opacity-50 shrink-0"></div>
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest text-center">建卡参考</h2>
-                <div className="text-[12px] text-[#695d3e] space-y-1.5 text-justify font-serif leading-[1.4]">
-                  {RULES_NOTES.map((p, i) => <p key={i}>{p}</p>)}
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Section: Left and Right Columns */}
-            <div className="flex gap-6">
-              {/* Left Column (Stats + Info + Occupation) */}
-              <div className="w-[520px] shrink-0 flex flex-col gap-6">
-
-                {/* Stats + Info block */}
-                <div className="flex gap-4">
-                  {/* Left inner: Stats */}
-                  <div className="w-[180px] shrink-0">
-                    <div className="border-[3px] border-[#daaa39] p-2 outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative">
-                      <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                      <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                      <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                      <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                      {renderStatGrid('心 智', 0, 15, data.sanity, 'sanity', '1')}
-                      <div className="text-center text-xs text-[#5c4a21] font-bold mb-3">命中阈值<sup className="text-[9px]">3</sup></div>
-                      {renderStatGrid('坚 毅', -12, 15, data.stability, 'stability')}
-                      {renderStatGrid('健 康', -12, 15, data.health, 'health')}
+                  <div className="flex-1">
+                    <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest text-center">创建调查员简要说明</h2>
+                    <div className="text-[12px] text-slate-800 space-y-2 text-justify font-serif leading-relaxed">
+                      {CREATION_GUIDE.map((p, i) => <p key={i} className="indent-[2em]">{p}</p>)}
                     </div>
                   </div>
+                  <div className="w-[1px] bg-[#daaa39] opacity-50 shrink-0"></div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest text-center">建卡参考</h2>
+                    <div className="text-[12px] text-[#695d3e] space-y-1.5 text-justify font-serif leading-[1.4]">
+                      {RULES_NOTES.map((p, i) => <p key={i}>{p}</p>)}
+                    </div>
+                  </div>
+                </div>
 
-                  {/* Right inner: Basic Info + Portrait + Notes */}
-                  <div className="flex-1 flex flex-col gap-4">
-                    {/* Basic Info & Portrait */}
-                    <div className="flex flex-col gap-4">
-                      {/* Name, Drive, etc */}
-                      <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-4 shadow-sm relative flex-1">
+                {/* Bottom Section: Left and Right Columns */}
+                <div className="flex gap-6">
+                  {/* Left Column (Stats + Info + Occupation) */}
+                  <div className="w-[520px] shrink-0 flex flex-col gap-6">
+
+                    {/* Stats + Info block */}
+                    <div className="flex gap-4">
+                      {/* Left inner: Stats */}
+                      <div className="w-[180px] shrink-0">
+                        <div className="border-[3px] border-[#daaa39] p-2 outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative">
+                          <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                          <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                          <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                          <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                          {renderStatGrid('心 智', 0, 15, data.sanity, 'sanity', '1')}
+                          <div className="text-center text-xs text-[#5c4a21] font-bold mb-3">命中阈值<sup className="text-[9px]">3</sup></div>
+                          {renderStatGrid('坚 毅', -12, 15, data.stability, 'stability')}
+                          {renderStatGrid('健 康', -12, 15, data.health, 'health')}
+                        </div>
+                      </div>
+
+                      {/* Right inner: Basic Info + Portrait + Notes */}
+                      <div className="flex-1 flex flex-col gap-4">
+                        {/* Basic Info & Portrait */}
+                        <div className="flex flex-col gap-4">
+                          {/* Name, Drive, etc */}
+                          <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-4 shadow-sm relative flex-1">
+                            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                            <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                            <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                            <div className="space-y-[6px]">
+                              {[
+                                { label: '调查员姓名', name: 'name', type: 'text' },
+                                { label: '动 力', name: 'drive', type: 'text' },
+                                { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入' },
+                                { label: '职业特长', name: 'specialty', type: 'text' },
+                                { label: '心智支柱', name: 'pillar', type: 'text' },
+                                { label: '剩余点数', name: 'points', type: 'text' }
+                              ].map(field => (
+                                <div key={field.name} className="flex text-[15px] items-center">
+                                  <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup>{field.footnote}</sup>}：</span>
+                                  <input
+                                    type="text"
+                                    name={field.name}
+                                    value={data[field.name]}
+                                    onChange={handleInput}
+                                    list={field.list}
+                                    placeholder={field.placeholder}
+                                    className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Portrait */}
+                          <div className="flex justify-center">
+                            <div className="w-[140px] shrink-0 flex flex-col items-center">
+                              <div className="text-[15px] font-bold text-[#5c4a21] mb-1 mr-auto tracking-widest">玩 家：</div>
+                              <div className="w-full h-full border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
+                                <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center min-h-[140px] w-full">
+                                  {data.avatar ? (
+                                    <img src={data.avatar} alt="Avatar" className="w-[134px] h-[140px] object-cover absolute inset-0" />
+                                  ) : (
+                                    <div className="text-[#daaa39] group-hover:text-[#c89b3c] flex flex-col items-center transition-colors">
+                                      <ImageIcon size={28} className="mb-2" />
+                                      <span className="text-xs font-bold font-sans">点击上传</span>
+                                    </div>
+                                  )}
+                                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                </label>
+                                <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1 text-sm shrink-0 font-sans z-10" placeholder="名字" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contacts & Notes */}
+                        <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col h-20 relative">
+                          <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-sm">坚毅之源及其他记录：</div>
+                          <textarea
+                            name="sourceOfStability"
+                            value={data.sourceOfStability}
+                            onChange={handleInput}
+                            className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug"
+                            placeholder="坚毅之源、联系人及游戏记录..."
+                          />
+                        </div>
+
+                        <datalist id="occupations">
+                          {OCCUPATIONS.map(occ => (
+                            <option key={occ} value={occ} />
+                          ))}
+                        </datalist>
+                      </div>
+                    </div>
+
+                    {/* Occupation Description Block inside Left Column */}
+                    {data.occupation && OCCUPATION_DESC[data.occupation] && (
+                      <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/80 p-4 shadow-sm relative flex-1">
                         <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
                         <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
                         <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
                         <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
-                        <div className="space-y-[6px]">
-                          {[
-                            { label: '调查员姓名', name: 'name', type: 'text' },
-                            { label: '动 力', name: 'drive', type: 'text' },
-                            { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入' },
-                            { label: '职业特长', name: 'specialty', type: 'text' },
-                            { label: '心智支柱', name: 'pillar', type: 'text' },
-                            { label: '剩余点数', name: 'points', type: 'text' }
-                          ].map(field => (
-                            <div key={field.name} className="flex text-[15px] items-center">
-                              <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup>{field.footnote}</sup>}：</span>
-                              <input
-                                type="text"
-                                name={field.name}
-                                value={data[field.name]}
-                                onChange={handleInput}
-                                list={field.list}
-                                placeholder={field.placeholder}
-                                className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm"
-                              />
-                            </div>
-                          ))}
+                        <h2 className="text-[15px] font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest">
+                          {data.occupation} - 职业备注
+                        </h2>
+                        <div className="text-slate-800 space-y-2 whitespace-pre-wrap text-[12px] leading-relaxed font-serif text-justify">
+                          {OCCUPATION_DESC[data.occupation]}
                         </div>
                       </div>
+                    )}
+                  </div>
 
-                      {/* Portrait */}
-                      <div className="flex justify-center">
-                        <div className="w-[140px] shrink-0 flex flex-col items-center">
-                          <div className="text-[15px] font-bold text-[#5c4a21] mb-1 mr-auto tracking-widest">玩 家：</div>
-                          <div className="w-full h-full border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
-                            <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center min-h-[140px] w-full">
-                              {data.avatar ? (
-                                <img src={data.avatar} alt="Avatar" className="w-[134px] h-[140px] object-cover absolute inset-0" />
-                              ) : (
-                                <div className="text-[#daaa39] group-hover:text-[#c89b3c] flex flex-col items-center transition-colors">
-                                  <ImageIcon size={28} className="mb-2" />
-                                  <span className="text-xs font-bold font-sans">点击上传</span>
-                                </div>
-                              )}
-                              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                            </label>
-                            <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1 text-sm shrink-0 font-sans z-10" placeholder="名字" />
+                  {/* Right Column (Skills) */}
+                  <div className="flex-1 space-y-4">
+                    <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative text-[13px] h-full">
+                      <div className="flex h-full">
+
+                        {/* 学术能力 & 一般能力 (Part 1) */}
+                        <div className="flex-1 border-r border-[#daaa39] flex flex-col">
+                          <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">学术能力</div>
+                          <div className="p-1.5 space-y-0">
+                            {ACADEMIC_SKILLS.map(skill => (
+                              <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                              </div>
+                            ))}
                           </div>
                         </div>
+
+                        {/* 社交能力 & 技术能力 */}
+                        <div className="flex-1 border-r border-[#daaa39] flex flex-col">
+                          <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">社交能力</div>
+                          <div className="p-1.5 space-y-0 border-b border-[#daaa39] pb-2">
+                            {SOCIAL_SKILLS.map(skill => (
+                              <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">技术能力</div>
+                          <div className="p-1.5 space-y-0">
+                            {TECH_SKILLS.map(skill => (
+                              <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 一般能力 */}
+                        <div className="flex-1 flex flex-col">
+                          <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">一般能力</div>
+                          <div className="p-1.5 space-y-0">
+                            {GENERAL_SKILLS.map(skill => (
+                              <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
                       </div>
                     </div>
-
-                    {/* Contacts & Notes */}
-                    <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col h-20 relative">
-                      <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-sm">坚毅之源及其他记录：</div>
-                      <textarea
-                        name="sourceOfStability"
-                        value={data.sourceOfStability}
-                        onChange={handleInput}
-                        className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug"
-                        placeholder="坚毅之源、联系人及游戏记录..."
-                      />
-                    </div>
-
-                    <datalist id="occupations">
-                      {OCCUPATIONS.map(occ => (
-                        <option key={occ} value={occ} />
-                      ))}
-                    </datalist>
                   </div>
                 </div>
+              </>
+            )}
 
-                {/* Occupation Description Block inside Left Column */}
-                {data.occupation && OCCUPATION_DESC[data.occupation] && (
-                  <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/80 p-4 shadow-sm relative flex-1">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+            {activeTab === 'memo' && (
+              <div className="flex flex-col gap-6 w-full min-h-[800px]">
+                {/* 战役备忘录 */}
+                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col flex-1 relative shadow-sm">
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
-                    <h2 className="text-[15px] font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest">
-                      {data.occupation} - 职业备注
-                    </h2>
-                    <div className="text-slate-800 space-y-2 whitespace-pre-wrap text-[12px] leading-relaxed font-serif text-justify">
-                      {OCCUPATION_DESC[data.occupation]}
-                    </div>
-                  </div>
-                )}
-              </div>
+                  <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-4 tracking-widest text-center">战役备忘录（游戏记录、NPC、线索等）</h2>
+                  <textarea
+                    name="campaignMemo"
+                    value={data.campaignMemo}
+                    onChange={handleInput}
+                    className="flex-1 w-full bg-transparent outline-none resize-none text-slate-800 text-[14px] leading-relaxed font-serif"
+                    placeholder="在此记录冒险中的重要线索、遇到的NPC、以及其他细节..."
+                  />
+                </div>
 
-              {/* Right Column (Skills) */}
-              <div className="flex-1 space-y-4">
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative text-[13px] h-full">
-                  <div className="flex h-full">
+                {/* 装备信息 */}
+                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col h-[300px] shrink-0 relative shadow-sm">
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
-                    {/* 学术能力 & 一般能力 (Part 1) */}
-                    <div className="flex-1 border-r border-[#daaa39] flex flex-col">
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">学术能力</div>
-                      <div className="p-1.5 space-y-0">
-                        {ACADEMIC_SKILLS.map(skill => (
-                          <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 社交能力 & 技术能力 */}
-                    <div className="flex-1 border-r border-[#daaa39] flex flex-col">
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">社交能力</div>
-                      <div className="p-1.5 space-y-0 border-b border-[#daaa39] pb-2">
-                        {SOCIAL_SKILLS.map(skill => (
-                          <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">技术能力</div>
-                      <div className="p-1.5 space-y-0">
-                        {TECH_SKILLS.map(skill => (
-                          <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 一般能力 */}
-                    <div className="flex-1 flex flex-col">
-                      <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">一般能力</div>
-                      <div className="p-1.5 space-y-0">
-                        {GENERAL_SKILLS.map(skill => (
-                          <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
+                  <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-4 tracking-widest text-center">装备与财物</h2>
+                  <textarea
+                    name="equipment"
+                    value={data.equipment}
+                    onChange={handleInput}
+                    className="flex-1 w-full bg-transparent outline-none resize-none text-slate-800 text-[14px] leading-relaxed font-serif"
+                    placeholder="武器、道具、资产、借条等..."
+                  />
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
         </div>
