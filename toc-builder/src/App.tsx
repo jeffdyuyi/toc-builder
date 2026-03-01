@@ -90,7 +90,7 @@ ${Object.entries(data.skills)
 ## 坚毅之源
 ${data.sourceOfStability}
 
-## 联系人及游戏记录
+## 联系人
 ${data.notes}
 `;
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
@@ -104,26 +104,20 @@ ${data.notes}
         <div
           key={i}
           onClick={() => setData((prev: any) => ({ ...prev, [field]: i }))}
-          className={`border-r border-b border-[#cca74b] flex items-center justify-center p-[2px] cursor-pointer text-sm transition-colors
+          className={`border-r border-b border-[#cca74b] flex-1 flex items-center justify-center p-[1px] min-w-[15px] cursor-pointer text-[12px] h-[24px] transition-colors
             ${current === i ? 'bg-[#c89b3c] text-white font-bold' : 'hover:bg-[#f6f1d3]'}`}
         >
           {i}
         </div>
       );
     }
-    const remainder = cells.length % 4;
-    if (remainder !== 0) {
-      for (let i = 0; i < 4 - remainder; i++) {
-        cells.push(<div key={`empty-${i}`} className="border-r border-b border-[#cca74b] bg-transparent"></div>);
-      }
-    }
 
     return (
-      <div className="mb-2">
-        <div className="text-center font-bold text-[#5c4a21] text-sm mb-[2px]">
-          {title}{footnote && <sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote(footnote)}>{footnote}</sup>}
+      <div className="flex items-stretch border-t border-l border-[#cca74b] bg-transparent text-slate-800">
+        <div className="flex items-center justify-center border-r border-b border-[#cca74b] bg-[#f8f4e6] font-bold text-[#5c4a21] text-[13px] shrink-0 w-[60px] tracking-widest">
+          {title}{footnote && <sup className="text-[10px] cursor-help text-[#c89b3c] ml-[2px]" title={getRuleNote(footnote)}>{footnote}</sup>}
         </div>
-        <div className="border-t border-l border-[#cca74b] grid grid-cols-4 bg-transparent text-slate-800">
+        <div className="flex flex-wrap flex-1">
           {cells}
         </div>
       </div>
@@ -205,100 +199,114 @@ ${data.notes}
                   {/* Left Column (Stats + Info + Occupation) */}
                   <div className="w-[520px] shrink-0 flex flex-col gap-6">
 
-                    {/* Stats + Info block */}
+                    {/* Portrait & Basic Info block */}
                     <div className="flex gap-4">
-                      {/* Left inner: Stats */}
-                      <div className="w-[180px] shrink-0">
-                        <div className="border-[3px] border-[#daaa39] p-2 outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative">
-                          <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                          <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                          <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                          <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                          {renderStatGrid('心 智', 0, 15, data.sanity, 'sanity', '1')}
-                          <div className="text-center text-xs text-[#5c4a21] font-bold mb-3">命中阈值<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote('3')}>3</sup></div>
-                          {renderStatGrid('坚 毅', -12, 15, data.stability, 'stability')}
-                          {renderStatGrid('健 康', -12, 15, data.health, 'health')}
+                      {/* Portrait (Left) */}
+                      <div className="flex justify-center">
+                        <div className="w-[140px] shrink-0 flex flex-col items-center">
+                          <div className="text-[15px] font-bold text-[#5c4a21] mb-1 mr-auto tracking-widest pl-1">玩 家：</div>
+                          <div className="w-full h-full min-h-[160px] border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
+                            <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center w-full">
+                              {data.avatar ? (
+                                <img src={data.avatar} alt="Avatar" className="w-[134px] h-[150px] object-cover absolute inset-0" />
+                              ) : (
+                                <div className="text-[#daaa39] group-hover:text-[#c89b3c] flex flex-col items-center transition-colors">
+                                  <ImageIcon size={28} className="mb-2" />
+                                  <span className="text-xs font-bold font-sans">点击上传</span>
+                                </div>
+                              )}
+                              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                            </label>
+                            <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1 text-sm shrink-0 font-sans z-10 focus:bg-[#f6f1d3] transition-all" placeholder="名字" />
+                          </div>
                         </div>
                       </div>
 
-                      {/* Right inner: Basic Info + Portrait + Notes */}
-                      <div className="flex-1 flex flex-col gap-4">
-                        {/* Basic Info & Portrait */}
-                        <div className="flex flex-col gap-4">
-                          {/* Name, Drive, etc */}
-                          <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-4 shadow-sm relative flex-1">
-                            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                            <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                            <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+                      {/* Basic Info (Right) */}
+                      <div className="flex-1 flex flex-col bg-white/50 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] p-4 shadow-sm relative">
+                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
-                            <div className="space-y-[6px]">
-                              {[
-                                { label: '调查员姓名', name: 'name', type: 'text' },
-                                { label: '动 力', name: 'drive', type: 'text' },
-                                { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入' },
-                                { label: '职业特长', name: 'specialty', type: 'text' },
-                                { label: '心智支柱', name: 'pillar', type: 'text' },
-                                { label: '剩余点数', name: 'points', type: 'text' }
-                              ].map(field => (
-                                <div key={field.name} className="flex text-[15px] items-center">
-                                  <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup className="cursor-help text-[#c89b3c]" title={getRuleNote(field.footnote)}>{field.footnote}</sup>}：</span>
-                                  <input
-                                    type="text"
-                                    name={field.name}
-                                    value={data[field.name]}
-                                    onChange={handleInput}
-                                    list={field.list}
-                                    placeholder={field.placeholder}
-                                    className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all"
-                                  />
-                                </div>
-                              ))}
+                        <div className="flex flex-col justify-between h-full space-y-[4px]">
+                          {[
+                            { label: '调查员姓名', name: 'name', type: 'text' },
+                            { label: '动 力', name: 'drive', type: 'text' },
+                            { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入' },
+                            { label: '职业特长', name: 'specialty', type: 'text' },
+                            { label: '心智支柱', name: 'pillar', type: 'text' },
+                            { label: '剩余点数', name: 'points', type: 'text' }
+                          ].map(field => (
+                            <div key={field.name} className="flex text-[15px] items-center">
+                              <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup className="cursor-help text-[#c89b3c]" title={getRuleNote(field.footnote)}>{field.footnote}</sup>}：</span>
+                              <input
+                                type="text"
+                                name={field.name}
+                                value={data[field.name]}
+                                onChange={handleInput}
+                                list={field.list}
+                                placeholder={field.placeholder}
+                                className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all"
+                              />
                             </div>
-                          </div>
-
-                          {/* Portrait */}
-                          <div className="flex justify-center">
-                            <div className="w-[140px] shrink-0 flex flex-col items-center">
-                              <div className="text-[15px] font-bold text-[#5c4a21] mb-1 mr-auto tracking-widest">玩 家：</div>
-                              <div className="w-full h-full border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
-                                <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center min-h-[140px] w-full">
-                                  {data.avatar ? (
-                                    <img src={data.avatar} alt="Avatar" className="w-[134px] h-[140px] object-cover absolute inset-0" />
-                                  ) : (
-                                    <div className="text-[#daaa39] group-hover:text-[#c89b3c] flex flex-col items-center transition-colors">
-                                      <ImageIcon size={28} className="mb-2" />
-                                      <span className="text-xs font-bold font-sans">点击上传</span>
-                                    </div>
-                                  )}
-                                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                                </label>
-                                <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1 text-sm shrink-0 font-sans z-10 focus:bg-[#f6f1d3] transition-all" placeholder="名字" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Contacts & Notes */}
-                        <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col h-20 relative">
-                          <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-sm">坚毅之源及其他记录：</div>
-                          <textarea
-                            name="sourceOfStability"
-                            value={data.sourceOfStability}
-                            onChange={handleInput}
-                            className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all"
-                            placeholder="坚毅之源、联系人及游戏记录..."
-                          />
-                        </div>
-
-                        <datalist id="occupations">
-                          {OCCUPATIONS.map(occ => (
-                            <option key={occ} value={occ} />
                           ))}
-                        </datalist>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Stats Horizontal Block */}
+                    <div className="border-[3px] border-[#daaa39] p-2 pt-[10px] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 shadow-sm relative flex flex-col gap-2.5">
+                      <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                      <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                      <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                      <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                      {renderStatGrid('心智', 0, 15, data.sanity, 'sanity', '1')}
+                      <div className="text-center text-[13px] text-[#5c4a21] font-bold my-[-8px] tracking-widest">命中阈值<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('3')}>3</sup></div>
+                      {renderStatGrid('坚毅', -12, 15, data.stability, 'stability')}
+                      {renderStatGrid('健康', -12, 15, data.health, 'health')}
+                    </div>
+
+                    {/* Contacts & Notes Split */}
+                    <div className="flex gap-4 h-[100px]">
+                      <div className="flex-1 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col relative">
+                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                        <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">坚毅之源</div>
+                        <textarea
+                          name="sourceOfStability"
+                          value={data.sourceOfStability}
+                          onChange={handleInput}
+                          className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
+                          placeholder="填写坚毅之源..."
+                        />
+                      </div>
+                      <div className="flex-1 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col relative">
+                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+
+                        <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">联系人</div>
+                        <textarea
+                          name="notes"
+                          value={data.notes}
+                          onChange={handleInput}
+                          className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
+                          placeholder="填写重要联系人..."
+                        />
+                      </div>
+                    </div>
+
+                    <datalist id="occupations">
+                      {OCCUPATIONS.map(occ => (
+                        <option key={occ} value={occ} />
+                      ))}
+                    </datalist>
 
                     {/* Occupation Description Block inside Left Column */}
                     {data.occupation && OCCUPATION_DESC[data.occupation] && (
