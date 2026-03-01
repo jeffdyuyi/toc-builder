@@ -144,11 +144,12 @@ ${data.notes}
     <div className="min-h-screen bg-slate-100 p-2 md:p-8 font-sans">
       <div className="max-w-[900px] mx-auto">
         <header className="mb-4 flex flex-col md:flex-row justify-between items-center bg-white p-4 shadow rounded border border-slate-200">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-800">TOC 角色卡生成器</h1>
-            <p className="text-slate-500 text-sm mt-1">复古排版，完美还原</p>
+          <div className="flex-1 flex justify-center md:justify-start">
+            <h1 className="text-4xl md:text-5xl leading-none font-black text-[#695d3e] tracking-[0.4em] ml-[0.4em]" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
+              克苏鲁迷踪
+            </h1>
           </div>
-          <div className="flex gap-2 mt-4 md:mt-0">
+          <div className="flex gap-2 mt-4 md:mt-0 shrink-0">
             <button onClick={exportPNG} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm font-medium transition-colors">
               <ImageIcon size={16} /> 导出 PNG
             </button>
@@ -168,12 +169,7 @@ ${data.notes}
               backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
             }}
           >
-            {/* Header */}
-            <div className="mb-8 text-center">
-              <h1 className="text-[3.5rem] leading-none font-black text-[#695d3e] tracking-[0.5em] ml-[0.5em]" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
-                克苏鲁迷踪
-              </h1>
-            </div>
+            {/* Header Removed */}
 
             <div className="flex gap-4">
               {/* Left Column (Stats Grid) */}
