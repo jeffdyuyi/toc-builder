@@ -126,40 +126,45 @@ ${data.notes}
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-2 md:p-8 font-sans">
-      <div className="max-w-[1200px] mx-auto">
-        <header className="mb-4 flex flex-col md:flex-row justify-between items-center bg-white p-4 shadow rounded border border-slate-200">
-          <div className="flex-1 flex justify-center md:justify-start">
-            <h1 className="text-4xl md:text-5xl leading-none font-black text-[#695d3e] tracking-[0.4em] ml-[0.4em]" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
-              克苏鲁迷踪
-            </h1>
-          </div>
-          <div className="flex gap-4 md:mr-8 bg-slate-100 p-1.5 rounded outline outline-1 outline-slate-200 mt-4 md:mt-0">
-            <button
-              onClick={() => setActiveTab('main')}
-              className={`px-6 py-1.5 text-sm font-bold rounded flex items-center gap-1 transition-all ${activeTab === 'main' ? 'bg-[#daaa39] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800'}`}
-            >
-              角色卡档案
-            </button>
-            <button
-              onClick={() => setActiveTab('memo')}
-              className={`px-6 py-1.5 text-sm font-bold rounded flex items-center gap-1 transition-all ${activeTab === 'memo' ? 'bg-[#daaa39] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800'}`}
-            >
-              备忘录与装备
-            </button>
-          </div>
-          <div className="flex gap-2 mt-4 md:mt-0 shrink-0">
-            <button onClick={exportPNG} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm font-medium transition-colors">
-              <ImageIcon size={16} /> 导出 PNG
-            </button>
-            <button onClick={exportMD} className="flex items-center gap-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-800 rounded text-white text-sm font-medium transition-colors">
-              <FileText size={16} /> 导出 MD
-            </button>
-          </div>
-        </header>
+    <div className="min-h-screen bg-[#1e1c18] font-sans text-stone-100 selection:bg-[#cca74b] selection:text-white">
+      {/* 悬浮顶栏 / Sticky Header (提高了操作便捷性) */}
+      <header className="sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center bg-[#1e1c18]/90 backdrop-blur-md shadow-lg px-6 py-4 border-b border-stone-800 mb-8 w-full">
+        <div className="flex-1 flex justify-center md:justify-start">
+          <h1 className="text-3xl md:text-4xl leading-none font-black text-[#cca74b] tracking-[0.2em] ml-[0.2em]" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
+            克苏鲁迷踪
+          </h1>
+        </div>
 
+        {/* 现代优雅的活页切换卡 / Sleek Tabs */}
+        <div className="flex bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-8 border border-stone-700/50">
+          <button
+            onClick={() => setActiveTab('main')}
+            className={`px-8 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'main' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+          >
+            档案卷宗
+          </button>
+          <button
+            onClick={() => setActiveTab('memo')}
+            className={`px-8 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'memo' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+          >
+            备忘录与装备
+          </button>
+        </div>
+
+        {/* 导出按钮操作区 / Action Buttons */}
+        <div className="flex gap-3 mt-4 md:mt-0 shrink-0">
+          <button onClick={exportPNG} className="flex items-center gap-2 px-4 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-sm font-bold transition-all duration-300 shadow-sm">
+            <ImageIcon size={16} /> 导出图像
+          </button>
+          <button onClick={exportMD} className="flex items-center gap-2 px-4 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-sm font-bold transition-all duration-300 shadow-sm">
+            <FileText size={16} /> 导出 MD
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-[1240px] mx-auto pb-12">
         {/* Sheet Container */}
-        <div className="flex justify-center overflow-x-auto pb-8">
+        <div className="flex justify-center overflow-x-auto px-4 pb-8 relative">
           <div
             ref={sheetRef}
             className="w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
@@ -245,7 +250,7 @@ ${data.notes}
                                     onChange={handleInput}
                                     list={field.list}
                                     placeholder={field.placeholder}
-                                    className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm"
+                                    className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all"
                                   />
                                 </div>
                               ))}
@@ -268,7 +273,7 @@ ${data.notes}
                                   )}
                                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                                 </label>
-                                <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1 text-sm shrink-0 font-sans z-10" placeholder="名字" />
+                                <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1 text-sm shrink-0 font-sans z-10 focus:bg-[#f6f1d3] transition-all" placeholder="名字" />
                               </div>
                             </div>
                           </div>
@@ -281,7 +286,7 @@ ${data.notes}
                             name="sourceOfStability"
                             value={data.sourceOfStability}
                             onChange={handleInput}
-                            className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug"
+                            className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all"
                             placeholder="坚毅之源、联系人及游戏记录..."
                           />
                         </div>
@@ -324,7 +329,7 @@ ${data.notes}
                             {ACADEMIC_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
                                 <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
                           </div>
@@ -337,7 +342,7 @@ ${data.notes}
                             {SOCIAL_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
                                 <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
                           </div>
@@ -346,7 +351,7 @@ ${data.notes}
                             {TECH_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
                                 <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
                           </div>
@@ -359,7 +364,7 @@ ${data.notes}
                             {GENERAL_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
                                 <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                                <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
                           </div>
@@ -386,7 +391,7 @@ ${data.notes}
                     name="campaignMemo"
                     value={data.campaignMemo}
                     onChange={handleInput}
-                    className="flex-1 w-full bg-transparent outline-none resize-none text-slate-800 text-[14px] leading-relaxed font-serif"
+                    className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[14px] leading-relaxed font-serif focus:bg-[#f6f1d3]/80 transition-all"
                     placeholder="在此记录冒险中的重要线索、遇到的NPC、以及其他细节..."
                   />
                 </div>
@@ -403,7 +408,7 @@ ${data.notes}
                     name="equipment"
                     value={data.equipment}
                     onChange={handleInput}
-                    className="flex-1 w-full bg-transparent outline-none resize-none text-slate-800 text-[14px] leading-relaxed font-serif"
+                    className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[14px] leading-relaxed font-serif focus:bg-[#f6f1d3]/80 transition-all"
                     placeholder="武器、道具、资产、借条等..."
                   />
                 </div>
