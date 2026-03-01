@@ -9,7 +9,12 @@ import {
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<'main' | 'memo' | 'guide' | 'rules'>('main');
+  const [activeTab, setActiveTab] = useState<'main' | 'memo' | 'guide'>('main');
+
+  const getRuleNote = (key: string) => {
+    const note = RULES_NOTES.find(n => n.startsWith(`${key}.`) || n.startsWith(`${key} `));
+    return note ? note.replace(/^(\d+\.|[*] )/, '').trim() : '';
+  };
 
   const [data, setData] = useState<any>({
     player: '',
@@ -116,13 +121,25 @@ ${data.notes}
     return (
       <div className="mb-2">
         <div className="text-center font-bold text-[#5c4a21] text-sm mb-[2px]">
-          {title}{footnote && <sup className="text-[10px]">{footnote}</sup>}
+          {title}{footnote && <sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote(footnote)}>{footnote}</sup>}
         </div>
         <div className="border-t border-l border-[#cca74b] grid grid-cols-4 bg-transparent text-slate-800">
           {cells}
         </div>
       </div>
     );
+  };
+
+  const renderSkillName = (name: string) => {
+    const matchNum = name.match(/^(.*?)\((\d+)\)$/);
+    if (matchNum) {
+      return <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
+    }
+    const matchStar = name.match(/^(.*?)\*$/);
+    if (matchStar) {
+      return <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
+    }
+    return name;
   };
 
   return (
@@ -154,12 +171,6 @@ ${data.notes}
             className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'guide' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
           >
             创建指南
-          </button>
-          <button
-            onClick={() => setActiveTab('rules')}
-            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'rules' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
-          >
-            建卡参考
           </button>
         </div>
 
@@ -205,7 +216,7 @@ ${data.notes}
                           <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
                           {renderStatGrid('心 智', 0, 15, data.sanity, 'sanity', '1')}
-                          <div className="text-center text-xs text-[#5c4a21] font-bold mb-3">命中阈值<sup className="text-[9px]">3</sup></div>
+                          <div className="text-center text-xs text-[#5c4a21] font-bold mb-3">命中阈值<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote('3')}>3</sup></div>
                           {renderStatGrid('坚 毅', -12, 15, data.stability, 'stability')}
                           {renderStatGrid('健 康', -12, 15, data.health, 'health')}
                         </div>
@@ -232,7 +243,7 @@ ${data.notes}
                                 { label: '剩余点数', name: 'points', type: 'text' }
                               ].map(field => (
                                 <div key={field.name} className="flex text-[15px] items-center">
-                                  <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup>{field.footnote}</sup>}：</span>
+                                  <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup className="cursor-help text-[#c89b3c]" title={getRuleNote(field.footnote)}>{field.footnote}</sup>}：</span>
                                   <input
                                     type="text"
                                     name={field.name}
@@ -318,7 +329,7 @@ ${data.notes}
                           <div className="p-1.5 space-y-0">
                             {ACADEMIC_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{renderSkillName(skill)}</span>
                                 <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
@@ -331,7 +342,7 @@ ${data.notes}
                           <div className="p-1.5 space-y-0 border-b border-[#daaa39] pb-2">
                             {SOCIAL_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{renderSkillName(skill)}</span>
                                 <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
@@ -340,7 +351,7 @@ ${data.notes}
                           <div className="p-1.5 space-y-0">
                             {TECH_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{renderSkillName(skill)}</span>
                                 <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
@@ -353,7 +364,7 @@ ${data.notes}
                           <div className="p-1.5 space-y-0">
                             {GENERAL_SKILLS.map(skill => (
                               <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center pr-2">
-                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
+                                <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{renderSkillName(skill)}</span>
                                 <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="w-12 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all" />
                               </div>
                             ))}
@@ -416,22 +427,6 @@ ${data.notes}
                   <h2 className="text-2xl font-bold text-[#5c4a21] border-b-2 border-[#daaa39] pb-4 mb-8 tracking-[0.2em] text-center font-['STKaiti']">创建调查员简要说明</h2>
                   <div className="text-[16px] text-slate-800 space-y-6 text-justify font-serif leading-[1.8] px-4 md:px-12">
                     {CREATION_GUIDE.map((p, i) => <p key={i} className="indent-[2em]">{p}</p>)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'rules' && (
-              <div className="flex flex-col gap-6 w-full min-h-[800px]">
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-12 flex flex-col flex-1 relative shadow-sm">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                  <h2 className="text-2xl font-bold text-[#5c4a21] border-b-2 border-[#daaa39] pb-4 mb-8 tracking-[0.2em] text-center font-['STKaiti']">建卡参考</h2>
-                  <div className="text-[16px] text-[#695d3e] space-y-4 text-justify font-serif leading-[1.8] px-4 md:px-12 font-bold">
-                    {RULES_NOTES.map((p, i) => <p key={i}>{p}</p>)}
                   </div>
                 </div>
               </div>
