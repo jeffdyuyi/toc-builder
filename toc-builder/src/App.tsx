@@ -15,12 +15,23 @@ const OCCUPATIONS = [
   "警探", "私家侦探", "教授", "科学家", "自定义..."
 ];
 
+const OCCUPATION_DESC: Record<string, string> = {
+  "精神病学家": `作为精神疾病的专家，你可能是一位受过“维也纳学派”训练的精神分析学家，或是一位研究大脑功能的神经病理学家，又或是一位对行为科学怀有强烈兴趣的医生。
+虽然弗洛伊德的理论几乎就要主宰这一领域，但还远远没有得到世人的普遍理解与接受。
+职业能力：生物学、语言（德语和拉丁语）、文献查阅、医学、药剂学、精神分析、察言观色和其他任意2个社交能力。
+信誉等级：3-4
+特殊规则：你可以使用医学或一个社交能力来获取不对外公开的精神治疗记录，或进入不对外开放的精神病院病房。如果你是拥有行医执照的医生（医学2级或以上），你可以用同样的方法获取医疗记录，以及进入医院病房。
+你可以做一个难度为3（而不是4）的精神分析检定来进行“精神治疗类选法”（见第79页）。你只需耗费1点精神分析能力池点数（而不是2点）使精神异常的对象稳定下来。你也能恢复自己的坚毅，但是每耗费１点精神分析点数只能恢复1点坚毅。
+你可以将察言观色视为法医心理学使用，利用犯罪现场的细节，参考过去的类似案件，整理出作案者的概貌——包括对方可能的个人经历、年龄、习惯，以及偏好。你可能需要提醒守秘人，你要使用该能力。你可以用角色创建点数购买催眠能力，并且使用该能力（见第41页）。`
+};
+
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const [data, setData] = useState<any>({
     player: '',
     name: '',
+    avatar: '',
     drive: '',
     occupation: '',
     specialty: '',
@@ -37,6 +48,17 @@ function App() {
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setData((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setData((prev: any) => ({ ...prev, avatar: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSkill = (skill: string, value: string) => {
@@ -147,18 +169,10 @@ ${data.notes}
             }}
           >
             {/* Header */}
-            <div className="flex justify-between items-end mb-6">
-              <h1 className="text-5xl font-black text-[#695d3e] tracking-widest ml-4" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
+            <div className="mb-8 text-center">
+              <h1 className="text-[3.5rem] leading-none font-black text-[#695d3e] tracking-[0.5em] ml-[0.5em]" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
                 克苏鲁迷踪
               </h1>
-              <div className="flex flex-col items-center mr-4">
-                <div className="text-lg font-bold text-[#695d3e] mb-1 mr-auto">玩家：</div>
-                <div className="w-40 h-48 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/40 shadow-inner flex flex-col">
-                  {/* Photo area */}
-                  <div className="flex-1"></div>
-                  <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-transparent border-t border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1" placeholder="" />
-                </div>
-              </div>
             </div>
 
             <div className="flex gap-4">
@@ -194,42 +208,63 @@ ${data.notes}
               {/* Right Column */}
               <div className="flex-1 space-y-4">
 
-                {/* Basic Info */}
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-4 shadow-sm relative">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+                {/* Basic Info & Portrait */}
+                <div className="flex gap-4">
+                  <div className="flex-1 border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-4 shadow-sm relative">
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
 
-                  <div className="space-y-[4px]">
-                    {[
-                      { label: '调查员姓名', name: 'name', type: 'text' },
-                      { label: '动 力', name: 'drive', type: 'text' },
-                      { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入自定义职业' },
-                      { label: '职业特长', name: 'specialty', type: 'text' },
-                      { label: '心智支柱', name: 'pillar', type: 'text' },
-                      { label: '剩余创建点数', name: 'points', type: 'text' }
-                    ].map(field => (
-                      <div key={field.name} className="flex text-[15px] items-center">
-                        <span className="text-[#5c4a21] font-bold w-[120px] tracking-widest">{field.label}{field.footnote && <sup>{field.footnote}</sup>}：</span>
-                        <input
-                          type="text"
-                          name={field.name}
-                          value={data[field.name]}
-                          onChange={handleInput}
-                          list={field.list}
-                          placeholder={field.placeholder}
-                          className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px]"
-                        />
-                      </div>
-                    ))}
+                    <div className="space-y-[4px]">
+                      {[
+                        { label: '调查员姓名', name: 'name', type: 'text' },
+                        { label: '动 力', name: 'drive', type: 'text' },
+                        { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入自定义职业' },
+                        { label: '职业特长', name: 'specialty', type: 'text' },
+                        { label: '心智支柱', name: 'pillar', type: 'text' },
+                        { label: '剩余创建点数', name: 'points', type: 'text' }
+                      ].map(field => (
+                        <div key={field.name} className="flex text-[15px] items-center">
+                          <span className="text-[#5c4a21] font-bold w-[120px] tracking-widest">{field.label}{field.footnote && <sup>{field.footnote}</sup>}：</span>
+                          <input
+                            type="text"
+                            name={field.name}
+                            value={data[field.name]}
+                            onChange={handleInput}
+                            list={field.list}
+                            placeholder={field.placeholder}
+                            className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <datalist id="occupations">
+                      {OCCUPATIONS.map(occ => (
+                        <option key={occ} value={occ} />
+                      ))}
+                    </datalist>
                   </div>
 
-                  <datalist id="occupations">
-                    {OCCUPATIONS.map(occ => (
-                      <option key={occ} value={occ} />
-                    ))}
-                  </datalist>
+                  {/* Portrait Box */}
+                  <div className="w-[140px] shrink-0 flex flex-col items-center">
+                    <div className="text-[15px] font-bold text-[#5c4a21] mb-1 mr-auto tracking-widest">玩 家：</div>
+                    <div className="w-full h-full border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
+                      <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center min-h-[140px] w-full">
+                        {data.avatar ? (
+                          <img src={data.avatar} alt="Avatar" className="w-[134px] h-full object-cover absolute inset-0" />
+                        ) : (
+                          <div className="text-[#daaa39] group-hover:text-[#c89b3c] flex flex-col items-center transition-colors">
+                            <ImageIcon size={28} className="mb-2" />
+                            <span className="text-xs font-bold font-sans">点击上传头像</span>
+                          </div>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                      </label>
+                      <input type="text" name="player" value={data.player} onChange={handleInput} className="w-full bg-white/60 border-t-[3px] border-[#daaa39] text-center outline-none text-slate-800 font-bold p-1.5 text-sm shrink-0 font-sans z-10" placeholder="" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Skills Grid */}
@@ -314,6 +349,21 @@ ${data.notes}
 
           </div>
         </div>
+
+        {/* Occupation Description Area */}
+        {data.occupation && OCCUPATION_DESC[data.occupation] && (
+          <div className="max-w-[850px] mx-auto bg-white p-6 shadow-md rounded-md border border-slate-200 mt-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 bg-[#daaa39] h-full"></div>
+            <h2 className="text-xl font-bold text-[#5c4a21] mb-3 flex items-center gap-2">
+              <FileText size={20} className="text-[#c89b3c]" />
+              {data.occupation} - 职业备注
+            </h2>
+            <div className="text-slate-700 space-y-2 whitespace-pre-wrap text-[14px] leading-relaxed font-sans bg-slate-50 p-4 rounded border border-slate-100">
+              {OCCUPATION_DESC[data.occupation]}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
