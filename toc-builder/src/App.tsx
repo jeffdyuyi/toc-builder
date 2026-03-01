@@ -125,15 +125,25 @@ ${data.notes}
   };
 
   const renderSkillName = (name: string) => {
+    const isClassSkill = data.occupation && OCCUPATION_DESC[data.occupation] && OCCUPATION_DESC[data.occupation].skills.includes(name);
+
+    let content;
     const matchNum = name.match(/^(.*?)\((\d+)\)$/);
     if (matchNum) {
-      return <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
+      content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
+    } else {
+      const matchStar = name.match(/^(.*?)\*$/);
+      if (matchStar) {
+        content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
+      } else {
+        content = name;
+      }
     }
-    const matchStar = name.match(/^(.*?)\*$/);
-    if (matchStar) {
-      return <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
+
+    if (isClassSkill) {
+      return <span className="font-bold text-[#b54a22] flex items-center gap-[2px]"><span className="text-[10px]">✦</span>{content}</span>;
     }
-    return name;
+    return content;
   };
 
   return (
@@ -319,8 +329,11 @@ ${data.notes}
                         <h2 className="text-[15px] font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest">
                           {data.occupation} - 职业备注
                         </h2>
-                        <div className="text-slate-800 space-y-2 whitespace-pre-wrap text-[12px] leading-relaxed font-serif text-justify">
-                          {OCCUPATION_DESC[data.occupation]}
+                        <div className="text-slate-800 space-y-2 whitespace-pre-wrap text-[12px] leading-relaxed font-serif text-justify border-t border-[#daaa39]/50 pt-2 mt-2">
+                          <p>{OCCUPATION_DESC[data.occupation].desc}</p>
+                          <p><strong className="text-[#5c4a21]">职业能力：</strong>{OCCUPATION_DESC[data.occupation].parsedSkillsText}</p>
+                          <p><strong className="text-[#5c4a21]">信誉等级：</strong>{OCCUPATION_DESC[data.occupation].credit}</p>
+                          <p><strong className="text-[#5c4a21]">特殊规则：</strong>{OCCUPATION_DESC[data.occupation].special}</p>
                         </div>
                       </div>
                     )}
