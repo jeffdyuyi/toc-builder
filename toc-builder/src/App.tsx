@@ -256,7 +256,7 @@ ${data.notes}
                     </div>
 
                     {/* Contacts & Notes */}
-                    <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col h-28 relative">
+                    <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 flex flex-col h-20 relative">
                       <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-sm">坚毅之源及其他记录：</div>
                       <textarea
                         name="sourceOfStability"
@@ -301,11 +301,11 @@ ${data.notes}
                     {/* 学术能力 & 一般能力 (Part 1) */}
                     <div className="flex-1 border-r border-[#daaa39] flex flex-col">
                       <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">学术能力</div>
-                      <div className="p-2 space-y-[2px]">
+                      <div className="p-1.5 space-y-0">
                         {ACADEMIC_SKILLS.map(skill => (
                           <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0 text-[11.5px]">{skill}</span>
+                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-[11px] py-0 -mt-[1px]" />
                           </div>
                         ))}
                       </div>
@@ -314,20 +314,20 @@ ${data.notes}
                     {/* 社交能力 & 技术能力 */}
                     <div className="flex-1 border-r border-[#daaa39] flex flex-col">
                       <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">社交能力</div>
-                      <div className="p-2 space-y-[2px] border-b border-[#daaa39] pb-3">
+                      <div className="p-1.5 space-y-0 border-b border-[#daaa39] pb-2">
                         {SOCIAL_SKILLS.map(skill => (
                           <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0 text-[11.5px]">{skill}</span>
+                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-[11px] py-0 -mt-[1px]" />
                           </div>
                         ))}
                       </div>
                       <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">技术能力</div>
-                      <div className="p-2 space-y-[2px]">
+                      <div className="p-1.5 space-y-0">
                         {TECH_SKILLS.map(skill => (
                           <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0 text-[11.5px]">{skill}</span>
+                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-[11px] py-0 -mt-[1px]" />
                           </div>
                         ))}
                       </div>
@@ -336,11 +336,11 @@ ${data.notes}
                     {/* 一般能力 */}
                     <div className="flex-1 flex flex-col">
                       <div className="p-[4px] font-bold text-center text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] tracking-widest text-sm">一般能力</div>
-                      <div className="p-2 space-y-[2px]">
+                      <div className="p-1.5 space-y-0">
                         {GENERAL_SKILLS.map(skill => (
                           <div key={skill} className="flex group hover:bg-[#f6f1d3]/50 items-center">
-                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0">{skill}</span>
-                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[2px]" />
+                            <span className="w-[84px] text-[#5c4a21] leading-none shrink-0 text-[11.5px]">{skill}</span>
+                            <input value={data.skills[skill] || ''} onChange={e => handleSkill(skill, e.target.value)} className="flex-1 min-w-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-[11px] py-0 -mt-[1px]" />
                           </div>
                         ))}
                       </div>
