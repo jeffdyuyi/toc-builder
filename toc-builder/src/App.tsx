@@ -266,6 +266,12 @@ ${data.notes}
                         placeholder="坚毅之源、联系人及游戏记录..."
                       />
                     </div>
+
+                    <datalist id="occupations">
+                      {OCCUPATIONS.map(occ => (
+                        <option key={occ} value={occ} />
+                      ))}
+                    </datalist>
                   </div>
                 </div>
 
