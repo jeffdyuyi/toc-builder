@@ -142,10 +142,10 @@ ${data.notes}
         </header>
 
         {/* Sheet Container */}
-        <div className="flex justify-center overflow-x-auto shadow-2xl bg-white">
+        <div className="flex justify-center overflow-x-auto pb-8">
           <div
             ref={sheetRef}
-            className="w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6"
+            className="w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
             style={{
               backgroundColor: '#faf8f2',
               backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
