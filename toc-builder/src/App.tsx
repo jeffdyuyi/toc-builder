@@ -10,6 +10,7 @@ import {
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'main' | 'memo' | 'guide'>('main');
+  const [showOccupations, setShowOccupations] = useState(false);
 
   const getRuleNote = (key: string) => {
     const note = RULES_NOTES.find(n => n.startsWith(`${key}.`) || n.startsWith(`${key} `));
@@ -243,22 +244,53 @@ ${data.notes}
                           {[
                             { label: '调查员姓名', name: 'name', type: 'text' },
                             { label: '动 力', name: 'drive', type: 'text' },
-                            { label: '职 业', name: 'occupation', footnote: '2', type: 'text', list: 'occupations', placeholder: '选择或输入' },
+                            { label: '职 业', name: 'occupation', footnote: '2', type: 'text', placeholder: '点击选择或输入' },
                             { label: '职业特长', name: 'specialty', type: 'text' },
                             { label: '心智支柱', name: 'pillar', type: 'text' },
                             { label: '剩余点数', name: 'points', type: 'text' }
                           ].map(field => (
-                            <div key={field.name} className="flex text-[15px] items-center">
-                              <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none">{field.label}{field.footnote && <sup className="cursor-help text-[#c89b3c]" title={getRuleNote(field.footnote)}>{field.footnote}</sup>}：</span>
-                              <input
-                                type="text"
-                                name={field.name}
-                                value={data[field.name]}
-                                onChange={handleInput}
-                                list={field.list}
-                                placeholder={field.placeholder}
-                                className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all"
-                              />
+                            <div key={field.name} className="flex text-[15px] items-center relative">
+                              <span className="text-[#5c4a21] font-bold w-[90px] tracking-widest leading-none shrink-0">{field.label}{field.footnote && <sup className="cursor-help text-[#c89b3c]" title={getRuleNote(field.footnote)}>{field.footnote}</sup>}：</span>
+                              {field.name === 'occupation' ? (
+                                <div className="flex-1 min-w-0 relative">
+                                  <input
+                                    type="text"
+                                    name={field.name}
+                                    value={data[field.name]}
+                                    onChange={handleInput}
+                                    onClick={() => setShowOccupations(!showOccupations)}
+                                    onBlur={() => setTimeout(() => setShowOccupations(false), 200)}
+                                    placeholder={field.placeholder}
+                                    className="w-full bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all cursor-pointer"
+                                  />
+                                  {showOccupations && (
+                                    <ul className="absolute z-50 left-0 right-0 top-[100%] mt-1 max-h-[220px] overflow-y-auto bg-[#faf8f2] border-[2px] border-[#daaa39] shadow-lg rounded-sm text-sm">
+                                      {OCCUPATIONS.map(occ => (
+                                        <li
+                                          key={occ}
+                                          onMouseDown={(e) => {
+                                            e.preventDefault(); // Prevents input onBlur from firing before click registers
+                                            setData((prev: any) => ({ ...prev, [field.name]: occ === "自定义..." ? "" : occ }));
+                                            setShowOccupations(false);
+                                          }}
+                                          className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer font-bold transition-colors"
+                                        >
+                                          {occ}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                              ) : (
+                                <input
+                                  type="text"
+                                  name={field.name}
+                                  value={data[field.name]}
+                                  onChange={handleInput}
+                                  placeholder={field.placeholder}
+                                  className="flex-1 min-w-0 bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all"
+                                />
+                              )}
                             </div>
                           ))}
                         </div>
@@ -311,12 +343,6 @@ ${data.notes}
                         />
                       </div>
                     </div>
-
-                    <datalist id="occupations">
-                      {OCCUPATIONS.map(occ => (
-                        <option key={occ} value={occ} />
-                      ))}
-                    </datalist>
 
                     {/* Occupation Description Block inside Left Column */}
                     {data.occupation && OCCUPATION_DESC[data.occupation] && (
