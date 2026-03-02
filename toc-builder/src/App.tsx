@@ -38,7 +38,28 @@ function App() {
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setData((prev: any) => ({ ...prev, [name]: value }));
+    setData((prev: any) => {
+      const next = { ...prev, [name]: value };
+      if (name === 'occupation') {
+        if (OCCUPATION_DESC[value]) {
+          next.customClassSkills = [...OCCUPATION_DESC[value].skills];
+        }
+      }
+      return next;
+    });
+  };
+
+  const toggleClassSkill = (skill: string) => {
+    setData((prev: any) => {
+      let curr = prev.customClassSkills;
+      if (curr === undefined || curr === null) {
+        curr = prev.occupation && OCCUPATION_DESC[prev.occupation] ? [...OCCUPATION_DESC[prev.occupation].skills] : [];
+      }
+      const newSkills = curr.includes(skill)
+        ? curr.filter((s: string) => s !== skill)
+        : [...curr, skill];
+      return { ...prev, customClassSkills: newSkills };
+    });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,25 +147,46 @@ ${data.notes}
   };
 
   const renderSkillName = (name: string) => {
-    const isClassSkill = data.occupation && OCCUPATION_DESC[data.occupation] && OCCUPATION_DESC[data.occupation].skills.includes(name);
+    let isClassSkill = false;
+    if (data.customClassSkills !== undefined && data.customClassSkills !== null) {
+      isClassSkill = data.customClassSkills.includes(name);
+    } else if (data.occupation && OCCUPATION_DESC[data.occupation]) {
+      isClassSkill = OCCUPATION_DESC[data.occupation].skills.includes(name);
+    }
 
     let content;
     const matchNum = name.match(/^(.*?)\((\d+)\)$/);
     if (matchNum) {
-      content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
+      content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c] pointer-events-none" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
     } else {
       const matchStar = name.match(/^(.*?)\*$/);
       if (matchStar) {
-        content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
+        content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c] pointer-events-none" title={getRuleNote('*')}>*</sup></>;
       } else {
         content = name;
       }
     }
 
     if (isClassSkill) {
-      return <span className="font-bold text-[#b54a22] flex items-center gap-[2px]"><span className="text-[10px]">✦</span>{content}</span>;
+      return (
+        <span
+          className="font-bold text-[#b54a22] flex items-center gap-[2px] cursor-pointer hover:opacity-75"
+          onClick={() => toggleClassSkill(name)}
+          title="点击取消本职核心标记"
+        >
+          <span className="text-[10px] pointer-events-none">✦</span>{content}
+        </span>
+      );
     }
-    return content;
+    return (
+      <span
+        className="cursor-pointer text-[#5c4a21] hover:text-[#b54a22] transition-colors"
+        onClick={() => toggleClassSkill(name)}
+        title="点击标记为本职核心能力"
+      >
+        {content}
+      </span>
+    );
   };
 
   return (
@@ -270,7 +312,8 @@ ${data.notes}
                                           key={occ}
                                           onMouseDown={(e) => {
                                             e.preventDefault(); // Prevents input onBlur from firing before click registers
-                                            setData((prev: any) => ({ ...prev, [field.name]: occ === "自定义..." ? "" : occ }));
+                                            const newOcc = occ === "自定义..." ? "" : occ;
+                                            setData((prev: any) => ({ ...prev, [field.name]: newOcc, customClassSkills: OCCUPATION_DESC[newOcc] ? [...OCCUPATION_DESC[newOcc].skills] : [] }));
                                             setShowOccupations(false);
                                           }}
                                           className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer font-bold transition-colors"
