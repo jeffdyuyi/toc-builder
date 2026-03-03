@@ -9,11 +9,6 @@ interface SkillsPageProps {
     toggleClassSkill: (skill: string) => void;
 }
 
-const getRuleNote = (key: string) => {
-    const note = RULES_NOTES.find(n => n.startsWith(`${key}.`) || n.startsWith(`${key} `));
-    return note ? note.replace(/^(\d+\.|[*] )/, '').trim() : '';
-};
-
 export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPageProps) {
     const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
     const [spentPoints, setSpentPoints] = useState<number>(0);
@@ -64,16 +59,14 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
             isClassSkill = OCCUPATION_DESC[data.occupation].skills.includes(name);
         }
 
-        let content;
+        let content = name;
         const matchNum = name.match(/^(.*?)\((\d+)\)$/);
         if (matchNum) {
-            content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
+            content = matchNum[1];
         } else {
             const matchStar = name.match(/^(.*?)\*$/);
             if (matchStar) {
-                content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
-            } else {
-                content = name;
+                content = matchStar[1];
             }
         }
 
@@ -81,6 +74,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
             <span
                 className={`cursor-pointer transition-colors hover:text-[#b54a22] flex items-center gap-[2px] ${isClassSkill ? 'font-bold text-[#b54a22]' : 'text-[#5c4a21]'}`}
                 onClick={() => toggleClassSkill(name)}
+                title="点击标记为本职能力"
             >
                 {isClassSkill && <span className="text-[10px] pointer-events-none">✦</span>}
                 {content}
@@ -94,16 +88,21 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
             <div className="p-1 space-y-0">
                 {skills.map(skill => (
                     <div key={skill}
-                        className={`flex group items-center pr-2 py-[1px] cursor-pointer ${selectedSkill === skill ? 'bg-[#f6f1d3]' : 'hover:bg-[#f6f1d3]/50'}`}
-                        onClick={() => setSelectedSkill(skill)}
+                        className={`flex group items-center pr-2 py-[1px] pl-1 ${selectedSkill === skill ? 'bg-[#f6f1d3]' : 'hover:bg-[#f6f1d3]/50'}`}
                     >
-                        <span className="w-[84px] leading-none shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            className={`w-5 h-5 flex items-center justify-center rounded shrink-0 mr-1 opacity-50 hover:opacity-100 hover:bg-[#daaa39] hover:text-white transition-all text-sm ${selectedSkill === skill ? 'opacity-100 text-[#b54a22]' : 'text-[#daaa39]'}`}
+                            onClick={() => setSelectedSkill(skill)}
+                            title="查看详情与检定"
+                        >
+                            🎲
+                        </button>
+                        <span className="w-[84px] leading-none shrink-0 flex items-center">
                             {renderSkillName(skill)}
                         </span>
                         <input
                             value={data.skills[skill] || ''}
                             onChange={e => handleSkill(skill, e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
                             className="w-10 ml-auto bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[1px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all"
                         />
                     </div>
@@ -135,9 +134,19 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
             right={
                 <GoldCard className="p-6 flex flex-col h-full bg-white/80">
                     {!selectedSkill ? (
-                        <div className="m-auto text-center text-stone-400 font-bold space-y-4 font-serif">
-                            <p className="text-xl">在左侧选择一项能力</p>
-                            <p className="text-sm">选中后，这里将显示该能力的详细说明及投掷工具。</p>
+                        <div className="flex flex-col h-full bg-white/50 p-6 shadow-inner border-[2px] border-[#daaa39] rounded">
+                            <h2 className="text-xl font-bold text-[#5c4a21] border-b border-[#daaa39] pb-2 mb-4 tracking-widest text-center">规则备注</h2>
+                            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                                {RULES_NOTES.map((note, idx) => (
+                                    <div key={idx} className="text-slate-800 text-[13px] leading-relaxed font-serif flex gap-2">
+                                        <span className="text-[#c89b3c] font-black shrink-0">{note.split(' ')[0]}</span>
+                                        <span>{note.substring(note.indexOf(' ') + 1)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-4 text-center text-stone-500 font-bold text-xs">
+                                点选左侧能力的 🎲 按钮进行检定和查看详情。
+                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-col h-full">
