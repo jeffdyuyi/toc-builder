@@ -4,13 +4,14 @@ import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import {
   ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS,
-  OCCUPATIONS, OCCUPATION_DESC, CREATION_GUIDE, RULES_NOTES
+  OCCUPATIONS, OCCUPATION_DESC, DRIVES, CREATION_GUIDE, RULES_NOTES
 } from './data/constants';
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'main' | 'memo' | 'guide'>('main');
   const [showOccupations, setShowOccupations] = useState(false);
+  const [showDrives, setShowDrives] = useState(false);
 
   const getRuleNote = (key: string) => {
     const note = RULES_NOTES.find(n => n.startsWith(`${key}.`) || n.startsWith(`${key} `));
@@ -157,11 +158,11 @@ ${data.notes}
     let content;
     const matchNum = name.match(/^(.*?)\((\d+)\)$/);
     if (matchNum) {
-      content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c] pointer-events-none" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
+      content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
     } else {
       const matchStar = name.match(/^(.*?)\*$/);
       if (matchStar) {
-        content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c] pointer-events-none" title={getRuleNote('*')}>*</sup></>;
+        content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
       } else {
         content = name;
       }
@@ -172,7 +173,6 @@ ${data.notes}
         <span
           className="font-bold text-[#b54a22] flex items-center gap-[2px] cursor-pointer hover:opacity-75"
           onClick={() => toggleClassSkill(name)}
-          title="点击取消本职核心标记"
         >
           <span className="text-[10px] pointer-events-none">✦</span>{content}
         </span>
@@ -182,7 +182,6 @@ ${data.notes}
       <span
         className="cursor-pointer text-[#5c4a21] hover:text-[#b54a22] transition-colors"
         onClick={() => toggleClassSkill(name)}
-        title="点击标记为本职核心能力"
       >
         {content}
       </span>
@@ -285,7 +284,7 @@ ${data.notes}
                         <div className="flex flex-col justify-between h-full space-y-[4px]">
                           {[
                             { label: '调查员姓名', name: 'name', type: 'text' },
-                            { label: '动 力', name: 'drive', type: 'text' },
+                            { label: '动 力', name: 'drive', type: 'text', placeholder: '点击选择或输入' },
                             { label: '职 业', name: 'occupation', footnote: '2', type: 'text', placeholder: '点击选择或输入' },
                             { label: '职业特长', name: 'specialty', type: 'text' },
                             { label: '心智支柱', name: 'pillar', type: 'text' },
@@ -319,6 +318,36 @@ ${data.notes}
                                           className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer font-bold transition-colors"
                                         >
                                           {occ}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                              ) : field.name === 'drive' ? (
+                                <div className="flex-1 min-w-0 relative">
+                                  <input
+                                    type="text"
+                                    name={field.name}
+                                    value={data[field.name]}
+                                    onChange={handleInput}
+                                    onClick={() => setShowDrives(!showDrives)}
+                                    onBlur={() => setTimeout(() => setShowDrives(false), 200)}
+                                    placeholder={field.placeholder}
+                                    className="w-full bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all cursor-pointer"
+                                  />
+                                  {showDrives && (
+                                    <ul className="absolute z-50 left-0 right-0 top-[100%] mt-1 max-h-[220px] overflow-y-auto bg-[#faf8f2] border-[2px] border-[#daaa39] shadow-lg rounded-sm text-sm">
+                                      {DRIVES.map(d => (
+                                        <li
+                                          key={d.name}
+                                          onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            setData((prev: any) => ({ ...prev, [field.name]: d.name }));
+                                            setShowDrives(false);
+                                          }}
+                                          className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer font-bold transition-colors"
+                                        >
+                                          {d.name}
                                         </li>
                                       ))}
                                     </ul>
@@ -386,6 +415,27 @@ ${data.notes}
                         />
                       </div>
                     </div>
+
+                    {/* Drive Description Block */}
+                    {(() => {
+                      const driveData = DRIVES.find(d => d.name === data.drive);
+                      if (!driveData) return null;
+                      return (
+                        <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/80 p-4 shadow-sm relative">
+                          <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
+                          <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
+                          <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
+                          <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
+                          <h2 className="text-[15px] font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-2 tracking-widest">
+                            动力：{driveData.name}
+                          </h2>
+                          <div className="text-slate-800 space-y-1 text-[12px] leading-relaxed font-serif text-justify">
+                            <p>{driveData.desc}</p>
+                            <p><strong className="text-[#5c4a21]">建议职业：</strong>{driveData.recommended}</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* Occupation Description Block inside Left Column */}
                     {data.occupation && OCCUPATION_DESC[data.occupation] && (
