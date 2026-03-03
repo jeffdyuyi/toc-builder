@@ -10,6 +10,21 @@ export const OCCUPATIONS = [
     "警探", "私家侦探", "教授", "科学家", "自定义..."
 ];
 
+export const PILLARS = [
+    "宗教信仰（可以是具体的教派，也可以是对仁慈、理性的神祇的一般性信仰）",
+    "家族（尤其是家族荣誉、血统纯正之类）",
+    "人的尊严与价值",
+    "科学的进步或理性的价值",
+    "物理定律和科学认知的客观性",
+    "善、美或「自然」（作为抽象概念）的价值",
+    "人类禀有的内在之善",
+    "道德原则",
+    "美学或艺术的至高原则",
+    "伊壁鸠鲁主义，不辜负自己的生命",
+    "爱国情操与民族美德",
+    "对故乡城镇的热爱"
+];
+
 export type DriveData = {
     name: string;
     desc: string;
@@ -17,7 +32,7 @@ export type DriveData = {
 };
 
 export const DRIVES: DriveData[] = [
-    { name: "冒险", desc: "没有什么比刺激的行动、战斗和奇怪的新经历更能吸引你了。你对肾上腺素的刺激渴求成瘾，如果只有怪物的胆水才能消除这种饥渴，那就去找吧！拒绝冒险、"谨慎行事"无异于承认你去掉了整个生活意义。", recommended: "罪犯、军人、灵异现象研究者和飞行员。" },
+    { name: "冒险", desc: "没有什么比刺激的行动、战斗和奇怪的新经历更能吸引你了。你对肾上腺素的刺激渴求成瘾，如果只有怪物的胆水才能消除这种饥渴，那就去找吧！拒绝冒险、「谨慎行事」无异于承认你放弃了整个生活意义。", recommended: "罪犯、军人、灵异现象研究者和飞行员。" },
     { name: "好古", desc: "只有投身于死寂的过去，你才觉得自己真正活着。发现历史的真相，或者只是欣赏一下古老而美丽的房屋或物品，就是活着的全部意义。你觉得，仅仅因为太太可口服装视过去，可真是粗蛮而又短智的现代品味。", recommended: "古玩家、考古学家、神职人员和教授。" },
     { name: "自大", desc: "你的成功是一种力量的证明——你一定会成功，因为只有你无所不能。你凭无名之辈的脱颖而习对你毫不适用，而那些家伙的退缩和畏惧也同样不会沾染在你的身上。", recommended: "精神病学家和科学家。" },
     { name: "艺术的敏感", desc: "你需要用艺术的手段再现现实的乐趣。你必须追寻艺术的足迹，就像一旦在她手中邂逅成型的私情，你对灵魂的渴求不能被任何事情阻断，尤其是世俗的烦扰。", recommended: "艺术家、作家和风雅子弟。" },
@@ -33,6 +48,44 @@ export const DRIVES: DriveData[] = [
     { name: "认知的渴求", desc: "你必须——你必须——知晓宇宙的秘密！这不仅仅是颠覆性的论文脚注，而是通往真相的征途。你无意于增进人类的认知：平庸人太就不堪压了解这个世界背后的东西。只有你热切地渴望掌握这类秘密，只有你愿意不惜一切代价获得真相。", recommended: "考古学家、灵异现象研究者和教授。" }
 ];
 
+export type VariantRule = {
+    name: string;
+    desc: string;
+    investigationPoints: Record<number, number>; // playerCount -> points
+    generalPoints: number;
+};
+
+export const VARIANT_RULES: VariantRule[] = [
+    {
+        name: "标准规则",
+        desc: "标准的克苏鲁迷踪角色创建规则。",
+        investigationPoints: { 2: 24, 3: 18, 4: 16 },
+        generalPoints: 65
+    },
+    {
+        name: "原旨风格",
+        desc: "忠于洛夫克拉夫特原著的低能力值角色，更加脆弱和不确定。",
+        investigationPoints: { 2: 16, 3: 12, 4: 10 },
+        generalPoints: 60
+    },
+    {
+        name: "通俗风格",
+        desc: "偏重通俗风格的强力人物，一般能力更高。调查能力仍采用标准规则。",
+        investigationPoints: { 2: 24, 3: 18, 4: 16 },
+        generalPoints: 75
+    }
+];
+
+export const INVESTIGATION_SKILLS = [...ACADEMIC_SKILLS, ...SOCIAL_SKILLS, ...TECH_SKILLS];
+
+// Skills that cannot be designated as class skills
+export const NON_CLASS_ELIGIBLE = ["逃脱(7)", "信誉等级", "克苏鲁神话(4)", "健康(9)", "心智(9)", "坚毅(9)"];
+
+// Free starting levels
+export const FREE_SANITY = 4;
+export const FREE_STABILITY = 1;
+export const FREE_HEALTH = 1;
+
 export type OccupationData = {
     desc: string;
     parsedSkillsText: string;
@@ -40,6 +93,24 @@ export type OccupationData = {
     credit: string;
     special: string;
 };
+
+// Helper to parse "3-4" or "0" or "3+" into [min, max]
+export function parseCreditRange(credit: string): [number, number] {
+    if (credit.includes('+')) {
+        const min = parseInt(credit);
+        return [min, 99];
+    }
+    if (credit.includes('-')) {
+        const parts = credit.split('-');
+        return [parseInt(parts[0]), parseInt(parts[1])];
+    }
+    if (credit.includes('。')) {
+        // e.g. "0。除非..." → just 0
+        return [0, 0];
+    }
+    const num = parseInt(credit);
+    return [isNaN(num) ? 0 : num, isNaN(num) ? 0 : num];
+}
 
 export const OCCUPATION_DESC: Record<string, OccupationData> = {
     "精神病学家": {

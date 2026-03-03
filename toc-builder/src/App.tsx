@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { FileText, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import {
   ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS,
-  OCCUPATIONS, OCCUPATION_DESC, DRIVES, CREATION_GUIDE, RULES_NOTES
+  OCCUPATIONS, OCCUPATION_DESC, DRIVES, PILLARS, CREATION_GUIDE, RULES_NOTES,
+  VARIANT_RULES, INVESTIGATION_SKILLS, parseCreditRange,
+  FREE_SANITY, FREE_STABILITY, FREE_HEALTH
 } from './data/constants';
 
 function App() {
@@ -12,6 +14,13 @@ function App() {
   const [activeTab, setActiveTab] = useState<'main' | 'memo' | 'guide'>('main');
   const [showOccupations, setShowOccupations] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
+  const [showPillars, setShowPillars] = useState(false);
+
+  // Point allocation state
+  const [variantIdx, setVariantIdx] = useState(0);
+  const [playerCount, setPlayerCount] = useState(4);
+  const [customInvPoints, setCustomInvPoints] = useState<number | null>(null);
+  const [customGenPoints, setCustomGenPoints] = useState<number | null>(null);
 
   const getRuleNote = (key: string) => {
     const note = RULES_NOTES.find(n => n.startsWith(`${key}.`) || n.startsWith(`${key} `));
@@ -80,6 +89,117 @@ function App() {
       skills: { ...prev.skills, [skill]: value }
     }));
   };
+
+  // === Point Allocation Computation ===
+  const variant = VARIANT_RULES[variantIdx];
+  const invPointsTotal = customInvPoints ?? (variant.investigationPoints[Math.min(playerCount, 4)] ?? variant.investigationPoints[4]);
+  const genPointsTotal = customGenPoints ?? variant.generalPoints;
+
+  const pointStats = useMemo(() => {
+    const classSkills: string[] = data.customClassSkills ?? (data.occupation && OCCUPATION_DESC[data.occupation] ? OCCUPATION_DESC[data.occupation].skills : []);
+    const occData = data.occupation && OCCUPATION_DESC[data.occupation] ? OCCUPATION_DESC[data.occupation] : null;
+    const [creditMin, creditMax] = occData ? parseCreditRange(occData.credit) : [0, 0];
+    const isWindyDandy = data.occupation === '风雅子弟';
+
+    let invUsed = 0;
+    let genUsed = 0;
+    const warnings: string[] = [];
+    const generalLevels: { name: string; level: number }[] = [];
+
+    // Get athletic level for escape discount
+    const athleticLevel = parseInt(data.skills['运动'] || '0') || 0;
+
+    const allSkills = [...ACADEMIC_SKILLS, ...SOCIAL_SKILLS, ...TECH_SKILLS, ...GENERAL_SKILLS];
+
+    for (const skill of allSkills) {
+      const rawLevel = parseInt(data.skills[skill] || '0') || 0;
+      if (rawLevel === 0) continue;
+
+      const isInvestigation = INVESTIGATION_SKILLS.includes(skill);
+      const isClass = classSkills.includes(skill);
+
+      if (skill === '信誉等级') {
+        // Credit rating: free initial = creditMin, within range = 1:1, over max = 2:1
+        const paidLevel = Math.max(0, rawLevel - creditMin);
+        let cost = 0;
+        if (isWindyDandy) {
+          cost = paidLevel; // no upper limit for 风雅子弟
+        } else {
+          const withinRange = Math.min(paidLevel, Math.max(0, creditMax - creditMin));
+          const overRange = Math.max(0, paidLevel - withinRange);
+          cost = withinRange + overRange * 2;
+        }
+        invUsed += cost;
+      } else if (skill === '逃脱(7)') {
+        // Escape: over 2x athletics is half price
+        const threshold = athleticLevel * 2;
+        if (rawLevel > threshold) {
+          const normalPart = threshold;
+          const discountPart = rawLevel - threshold;
+          genUsed += normalPart + Math.ceil(discountPart / 2);
+        } else {
+          genUsed += rawLevel;
+        }
+      } else if (skill === '心智(9)') {
+        genUsed += Math.max(0, rawLevel - FREE_SANITY);
+        generalLevels.push({ name: '心智', level: rawLevel });
+      } else if (skill === '坚毅(9)') {
+        genUsed += Math.max(0, rawLevel - FREE_STABILITY);
+        generalLevels.push({ name: '坚毅', level: rawLevel });
+      } else if (skill === '健康(9)') {
+        genUsed += Math.max(0, rawLevel - FREE_HEALTH);
+        generalLevels.push({ name: '健康', level: rawLevel });
+      } else if (isInvestigation) {
+        invUsed += isClass ? Math.ceil(rawLevel / 2) : rawLevel;
+      } else {
+        // General skill
+        genUsed += isClass ? Math.ceil(rawLevel / 2) : rawLevel;
+        generalLevels.push({ name: skill, level: rawLevel });
+      }
+    }
+
+    // Also count stat grid values for sanity/stability/health if not in skills
+    if (!data.skills['心智(9)']) {
+      genUsed += Math.max(0, (data.sanity || 0) - FREE_SANITY);
+      generalLevels.push({ name: '心智', level: data.sanity || 0 });
+    }
+    if (!data.skills['坚毅(9)']) {
+      genUsed += Math.max(0, (data.stability || 0) - FREE_STABILITY);
+      generalLevels.push({ name: '坚毅', level: data.stability || 0 });
+    }
+    if (!data.skills['健康(9)']) {
+      genUsed += Math.max(0, (data.health || 0) - FREE_HEALTH);
+      generalLevels.push({ name: '健康', level: data.health || 0 });
+    }
+
+    // Validation
+    if (invUsed > invPointsTotal) warnings.push(`调查能力点数超支 ${invUsed - invPointsTotal} 点`);
+    if (genUsed > genPointsTotal) warnings.push(`一般能力点数超支 ${genUsed - genPointsTotal} 点`);
+
+    // Second-highest general ability must be >= half of highest
+    generalLevels.sort((a, b) => b.level - a.level);
+    if (generalLevels.length >= 2 && generalLevels[0].level > 0) {
+      const half = Math.floor(generalLevels[0].level / 2);
+      if (generalLevels[1].level < half) {
+        warnings.push(`一般能力第二高(${generalLevels[1].name}:${generalLevels[1].level})不得低于最高(${generalLevels[0].name}:${generalLevels[0].level})的一半(${half})`);
+      }
+    }
+
+    // Sanity cap
+    const cthulhuLevel = parseInt(data.skills['克苏鲁神话(4)'] || '0') || 0;
+    const sanityCap = Math.min(10, 10 - cthulhuLevel);
+    const currentSanity = parseInt(data.skills['心智(9)'] || '0') || data.sanity || 0;
+    if (currentSanity > sanityCap) warnings.push(`心智(${currentSanity})超过上限(${sanityCap})`);
+
+    // Health/Stability cap
+    const currentHealth = parseInt(data.skills['健康(9)'] || '0') || data.health || 0;
+    const currentStability = parseInt(data.skills['坚毅(9)'] || '0') || data.stability || 0;
+    if (currentHealth > 12) warnings.push(`健康(${currentHealth})超过上限(12)`);
+    if (currentStability > 12) warnings.push(`坚毅(${currentStability})超过上限(12)`);
+
+    return { invUsed, genUsed, warnings };
+  }, [data, invPointsTotal, genPointsTotal]);
+
 
   const exportPNG = async () => {
     if (!sheetRef.current) return;
@@ -220,6 +340,84 @@ ${data.notes}
           </button>
         </div>
 
+        {/* Point Allocation Bar */}
+        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0 md:mr-4">
+          {/* Variant Rule Select */}
+          <select
+            value={variantIdx}
+            onChange={e => setVariantIdx(Number(e.target.value))}
+            className="bg-[#2c2923] border border-stone-700 text-stone-300 text-xs font-bold rounded px-2 py-1.5 outline-none focus:border-[#cca74b] transition-all cursor-pointer"
+            title={variant.desc}
+          >
+            {VARIANT_RULES.map((v, i) => (
+              <option key={v.name} value={i}>{v.name}</option>
+            ))}
+          </select>
+
+          {/* Player Count */}
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-stone-500 font-bold">人数</span>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={playerCount}
+              onChange={e => setPlayerCount(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-9 bg-[#2c2923] border border-stone-700 text-stone-200 text-center text-xs font-bold rounded px-1 py-1 outline-none focus:border-[#cca74b] transition-all"
+            />
+          </div>
+
+          {/* Investigation Points */}
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-stone-500 font-bold">调查</span>
+            <span className={`font-black text-sm ${pointStats.invUsed > invPointsTotal ? 'text-red-400' : 'text-emerald-400'}`}>
+              {pointStats.invUsed}
+            </span>
+            <span className="text-stone-600">/</span>
+            <input
+              type="number"
+              min={0}
+              value={customInvPoints ?? invPointsTotal}
+              onChange={e => {
+                const v = parseInt(e.target.value);
+                setCustomInvPoints(isNaN(v) ? null : v);
+              }}
+              className="w-10 bg-[#2c2923] border border-stone-700 text-stone-200 text-center text-xs font-bold rounded px-1 py-1 outline-none focus:border-[#cca74b] transition-all"
+              title="调查能力创建点数（可自定义）"
+            />
+          </div>
+
+          {/* General Points */}
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-stone-500 font-bold">一般</span>
+            <span className={`font-black text-sm ${pointStats.genUsed > genPointsTotal ? 'text-red-400' : 'text-emerald-400'}`}>
+              {pointStats.genUsed}
+            </span>
+            <span className="text-stone-600">/</span>
+            <input
+              type="number"
+              min={0}
+              value={customGenPoints ?? genPointsTotal}
+              onChange={e => {
+                const v = parseInt(e.target.value);
+                setCustomGenPoints(isNaN(v) ? null : v);
+              }}
+              className="w-10 bg-[#2c2923] border border-stone-700 text-stone-200 text-center text-xs font-bold rounded px-1 py-1 outline-none focus:border-[#cca74b] transition-all"
+              title="一般能力创建点数（可自定义）"
+            />
+          </div>
+
+          {/* Warnings */}
+          {pointStats.warnings.length > 0 && (
+            <div className="relative group">
+              <span className="text-red-400 text-sm font-bold cursor-help">⚠ {pointStats.warnings.length}</span>
+              <div className="absolute top-full right-0 mt-1 bg-[#2c2923] border border-red-500/50 rounded p-2 text-xs text-red-300 whitespace-nowrap z-50 hidden group-hover:block shadow-lg">
+                {pointStats.warnings.map((w, i) => <div key={i}>{w}</div>)}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* 导出按钮操作区 / Action Buttons */}
         <div className="flex gap-3 mt-4 md:mt-0 shrink-0">
           <button onClick={exportPNG} className="flex items-center gap-2 px-4 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-sm font-bold transition-all duration-300 shadow-sm">
@@ -286,8 +484,7 @@ ${data.notes}
                             { label: '调查员姓名', name: 'name', type: 'text' },
                             { label: '动 力', name: 'drive', type: 'text', placeholder: '点击选择或输入' },
                             { label: '职 业', name: 'occupation', footnote: '2', type: 'text', placeholder: '点击选择或输入' },
-                            { label: '职业特长', name: 'specialty', type: 'text' },
-                            { label: '心智支柱', name: 'pillar', type: 'text' },
+                            { label: '心智支柱', name: 'pillar', type: 'text', placeholder: '点击选择或输入' },
                             { label: '剩余点数', name: 'points', type: 'text' }
                           ].map(field => (
                             <div key={field.name} className="flex text-[15px] items-center relative">
@@ -348,6 +545,36 @@ ${data.notes}
                                           className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer font-bold transition-colors"
                                         >
                                           {d.name}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                              ) : field.name === 'pillar' ? (
+                                <div className="flex-1 min-w-0 relative">
+                                  <input
+                                    type="text"
+                                    name={field.name}
+                                    value={data[field.name]}
+                                    onChange={handleInput}
+                                    onClick={() => setShowPillars(!showPillars)}
+                                    onBlur={() => setTimeout(() => setShowPillars(false), 200)}
+                                    placeholder={field.placeholder}
+                                    className="w-full bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all cursor-pointer"
+                                  />
+                                  {showPillars && (
+                                    <ul className="absolute z-50 left-0 right-0 top-[100%] mt-1 max-h-[220px] overflow-y-auto bg-[#faf8f2] border-[2px] border-[#daaa39] shadow-lg rounded-sm text-sm">
+                                      {PILLARS.map(p => (
+                                        <li
+                                          key={p}
+                                          onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            setData((prev: any) => ({ ...prev, [field.name]: p }));
+                                            setShowPillars(false);
+                                          }}
+                                          className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer transition-colors leading-snug"
+                                        >
+                                          {p}
                                         </li>
                                       ))}
                                     </ul>
