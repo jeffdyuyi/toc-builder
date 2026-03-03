@@ -183,6 +183,34 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
             }
             right={
                 <>
+                    {/* Stats — placed at top */}
+                    <GoldCard className="p-2 pt-[10px] flex flex-col gap-2.5">
+                        {renderStatGrid('心智', 0, 15, data.sanity, 'sanity', '1')}
+                        <div className="text-center text-[13px] text-[#5c4a21] font-bold my-[-8px] tracking-widest">
+                            命中阈值<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('3')}>3</sup>
+                        </div>
+                        {renderStatGrid('坚毅', -12, 15, data.stability, 'stability')}
+                        {renderStatGrid('健康', -12, 15, data.health, 'health')}
+                    </GoldCard>
+
+                    {/* Source of Stability + Contacts — placed second */}
+                    <div className="flex gap-3">
+                        <GoldCard className="flex-1 flex flex-col min-h-[90px]">
+                            <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">坚毅之源</div>
+                            <textarea name="sourceOfStability" value={data.sourceOfStability} onChange={handleInput}
+                                className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
+                                placeholder="填写坚毅之源..."
+                            />
+                        </GoldCard>
+                        <GoldCard className="flex-1 flex flex-col min-h-[90px]">
+                            <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">联系人</div>
+                            <textarea name="notes" value={data.notes} onChange={handleInput}
+                                className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
+                                placeholder="填写重要联系人..."
+                            />
+                        </GoldCard>
+                    </div>
+
                     {/* Drive Description */}
                     {driveData && (
                         <GoldCard className="p-4 bg-white/80">
@@ -210,34 +238,6 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                             </div>
                         </GoldCard>
                     )}
-
-                    {/* Stats */}
-                    <GoldCard className="p-2 pt-[10px] flex flex-col gap-2.5">
-                        {renderStatGrid('心智', 0, 15, data.sanity, 'sanity', '1')}
-                        <div className="text-center text-[13px] text-[#5c4a21] font-bold my-[-8px] tracking-widest">
-                            命中阈值<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('3')}>3</sup>
-                        </div>
-                        {renderStatGrid('坚毅', -12, 15, data.stability, 'stability')}
-                        {renderStatGrid('健康', -12, 15, data.health, 'health')}
-                    </GoldCard>
-
-                    {/* Source of Stability + Contacts */}
-                    <div className="flex gap-3 flex-1">
-                        <GoldCard className="flex-1 flex flex-col">
-                            <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">坚毅之源</div>
-                            <textarea name="sourceOfStability" value={data.sourceOfStability} onChange={handleInput}
-                                className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
-                                placeholder="填写坚毅之源..."
-                            />
-                        </GoldCard>
-                        <GoldCard className="flex-1 flex flex-col">
-                            <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">联系人</div>
-                            <textarea name="notes" value={data.notes} onChange={handleInput}
-                                className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
-                                placeholder="填写重要联系人..."
-                            />
-                        </GoldCard>
-                    </div>
                 </>
             }
         />
