@@ -37,7 +37,7 @@ function App() {
     occupation: '',
     specialty: '',
     pillar: '',
-    points: '',
+    wealth: '',
     sanity: 4,
     stability: 1,
     health: 1,
@@ -270,7 +270,7 @@ function App() {
 - **职业:** ${data.occupation}
 - **职业特长:** ${data.specialty}
 - **心智支柱:** ${data.pillar}
-- **剩余创建点数:** ${data.points}
+- **随身财富:** ${data.wealth}
 
 ## 核心状态
 - **心智:** ${data.sanity} | **坚毅:** ${data.stability} | **健康:** ${data.health}

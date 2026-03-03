@@ -160,8 +160,8 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                         )}
                                     </div>
                                     <div className="flex text-[14px] items-center">
-                                        <span className={labelCls}>点 数：</span>
-                                        <input type="text" name="points" value={data.points} onChange={handleInput} className={inputCls} />
+                                        <span className={labelCls}>财 富：</span>
+                                        <input type="text" name="wealth" value={data.wealth || ''} onChange={handleInput} className={inputCls} placeholder="记录现金等" />
                                     </div>
                                 </div>
                             </div>
