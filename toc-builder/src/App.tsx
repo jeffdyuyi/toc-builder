@@ -4,12 +4,13 @@ import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import {
   ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS,
-  OCCUPATIONS, OCCUPATION_DESC, DRIVES, PILLARS, CREATION_GUIDE, RULES_NOTES,
+  OCCUPATION_DESC, CREATION_GUIDE,
   VARIANT_RULES, INVESTIGATION_SKILLS, parseCreditRange,
   FREE_SANITY, FREE_STABILITY, FREE_HEALTH
 } from './data/constants';
 import InfoPage from './components/InfoPage';
 import SkillsPage from './components/SkillsPage';
+import MemoPage from './components/MemoPage';
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -23,11 +24,6 @@ function App() {
   const [playerCount, setPlayerCount] = useState(4);
   const [customInvPoints, setCustomInvPoints] = useState<number | null>(null);
   const [customGenPoints, setCustomGenPoints] = useState<number | null>(null);
-
-  const getRuleNote = (key: string) => {
-    const note = RULES_NOTES.find(n => n.startsWith(`${key}.`) || n.startsWith(`${key} `));
-    return note ? note.replace(/^(\d+\.|[*] )/, '').trim() : '';
-  };
 
   const [data, setData] = useState<any>({
     player: '',
@@ -45,6 +41,7 @@ function App() {
     notes: '',
     campaignMemo: '',
     equipment: '',
+    equipmentItems: [],
     gender: '',
     age: '',
     appearance: '',
@@ -53,19 +50,6 @@ function App() {
     backstory: '',
     skills: {}
   });
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setData((prev: any) => {
-      const next = { ...prev, [name]: value };
-      if (name === 'occupation') {
-        if (OCCUPATION_DESC[value]) {
-          next.customClassSkills = [...OCCUPATION_DESC[value].skills];
-        }
-      }
-      return next;
-    });
-  };
 
   const toggleClassSkill = (skill: string) => {
     setData((prev: any) => {
@@ -78,24 +62,6 @@ function App() {
         : [...curr, skill];
       return { ...prev, customClassSkills: newSkills };
     });
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setData((prev: any) => ({ ...prev, avatar: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSkill = (skill: string, value: string) => {
-    setData((prev: any) => ({
-      ...prev,
-      skills: { ...prev.skills, [skill]: value }
-    }));
   };
 
   // === Point Allocation Computation ===
@@ -246,74 +212,6 @@ ${data.notes}
 `;
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     saveAs(blob, `TOC角色卡_${data.name || '未命名'}.md`);
-  };
-
-  const renderStatGrid = (title: string, min: number, max: number, current: number, field: string, footnote?: string) => {
-    const cells = [];
-    for (let i = min; i <= max; i++) {
-      cells.push(
-        <div
-          key={i}
-          onClick={() => setData((prev: any) => ({ ...prev, [field]: i }))}
-          className={`border-r border-b border-[#cca74b] flex-1 flex items-center justify-center p-[1px] min-w-[15px] cursor-pointer text-[12px] h-[24px] transition-colors
-            ${current === i ? 'bg-[#c89b3c] text-white font-bold' : 'hover:bg-[#f6f1d3]'}`}
-        >
-          {i}
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-stretch border-t border-l border-[#cca74b] bg-transparent text-slate-800">
-        <div className="flex items-center justify-center border-r border-b border-[#cca74b] bg-[#f8f4e6] font-bold text-[#5c4a21] text-[13px] shrink-0 w-[60px] tracking-widest">
-          {title}{footnote && <sup className="text-[10px] cursor-help text-[#c89b3c] ml-[2px]" title={getRuleNote(footnote)}>{footnote}</sup>}
-        </div>
-        <div className="flex flex-wrap flex-1">
-          {cells}
-        </div>
-      </div>
-    );
-  };
-
-  const renderSkillName = (name: string) => {
-    let isClassSkill = false;
-    if (data.customClassSkills !== undefined && data.customClassSkills !== null) {
-      isClassSkill = data.customClassSkills.includes(name);
-    } else if (data.occupation && OCCUPATION_DESC[data.occupation]) {
-      isClassSkill = OCCUPATION_DESC[data.occupation].skills.includes(name);
-    }
-
-    let content;
-    const matchNum = name.match(/^(.*?)\((\d+)\)$/);
-    if (matchNum) {
-      content = <>{matchNum[1]}<sup className="text-[9px] cursor-help text-[#c89b3c]" title={getRuleNote(matchNum[2])}>{matchNum[2]}</sup></>;
-    } else {
-      const matchStar = name.match(/^(.*?)\*$/);
-      if (matchStar) {
-        content = <>{matchStar[1]}<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('*')}>*</sup></>;
-      } else {
-        content = name;
-      }
-    }
-
-    if (isClassSkill) {
-      return (
-        <span
-          className="font-bold text-[#b54a22] flex items-center gap-[2px] cursor-pointer hover:opacity-75"
-          onClick={() => toggleClassSkill(name)}
-        >
-          <span className="text-[10px] pointer-events-none">✦</span>{content}
-        </span>
-      );
-    }
-    return (
-      <span
-        className="cursor-pointer text-[#5c4a21] hover:text-[#b54a22] transition-colors"
-        onClick={() => toggleClassSkill(name)}
-      >
-        {content}
-      </span>
-    );
   };
 
   return (
@@ -475,6 +373,10 @@ ${data.notes}
                 setData={setData}
                 toggleClassSkill={toggleClassSkill}
               />
+            )}
+
+            {activeTab === 'memo' && (
+              <MemoPage data={data} setData={setData} />
             )}
 
             {activeTab === 'guide' && (
