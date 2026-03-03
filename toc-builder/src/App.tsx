@@ -1,5 +1,5 @@
-import { useRef, useState, useMemo } from 'react';
-import { FileText, Image as ImageIcon } from 'lucide-react';
+import { useRef, useState, useMemo, useEffect } from 'react';
+import { FileText, Image as ImageIcon, Save, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import {
@@ -24,6 +24,10 @@ function App() {
   const [playerCount, setPlayerCount] = useState(4);
   const [customInvPoints, setCustomInvPoints] = useState<number | null>(null);
   const [customGenPoints, setCustomGenPoints] = useState<number | null>(null);
+
+  // App-level Creation state
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [frozenStats, setFrozenStats] = useState({ invUsed: 0, genUsed: 0 });
 
   const [data, setData] = useState<any>({
     player: '',
@@ -171,8 +175,81 @@ function App() {
     if (currentHealth > 12) warnings.push(`健康(${currentHealth})超过上限(12)`);
     if (currentStability > 12) warnings.push(`坚毅(${currentStability})超过上限(12)`);
 
+    // If completed, freeze the displayed used points, but continue calculating cap warnings
+    if (isCompleted) {
+      return { invUsed: frozenStats.invUsed, genUsed: frozenStats.genUsed, warnings };
+    }
+
     return { invUsed, genUsed, warnings };
-  }, [data, invPointsTotal, genPointsTotal]);
+  }, [data, invPointsTotal, genPointsTotal, isCompleted, frozenStats]);
+
+  // === Save/Load functionality ===
+  const [savedCharacters, setSavedCharacters] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Load list of saved chars on mount
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('toc_char_'));
+    setSavedCharacters(keys.map(k => k.replace('toc_char_', '')));
+  }, []);
+
+  const saveCharacter = () => {
+    if (!data.name) {
+      alert("请至少填写调查员姓名再保存！");
+      return;
+    }
+
+    // If not completed, prompt warning
+    if (!isCompleted) {
+      // Live recalculate to check exact completeness
+      const cStats = pointStats; // already memoized
+      if (cStats.invUsed !== invPointsTotal || cStats.genUsed !== genPointsTotal || cStats.warnings.length > 0) {
+        const confirmComplete = confirm("当前能力点数尚未完全分配完毕（或已透支），或存在警告。\\n是否仍然确定车卡完成（进入游戏阶段，且检定能力将会解锁）？\\n\\n点击“取消”将以未完成草稿状态保存。");
+        if (confirmComplete) {
+          setIsCompleted(true);
+          setFrozenStats({ invUsed: cStats.invUsed, genUsed: cStats.genUsed });
+          // Data will save with the new states on next render, but we can bundle it manually now:
+          const savePayload = { data, isCompleted: true, frozenStats: { invUsed: cStats.invUsed, genUsed: cStats.genUsed } };
+          localStorage.setItem(`toc_char_${data.name}`, JSON.stringify(savePayload));
+          setSavedCharacters(prev => Array.from(new Set([...prev, data.name])));
+          alert("已确认为游戏阶段并保存本地！");
+          return;
+        }
+      } else {
+        // Exactly matched points
+        setIsCompleted(true);
+        setFrozenStats({ invUsed: cStats.invUsed, genUsed: cStats.genUsed });
+        const savePayload = { data, isCompleted: true, frozenStats: { invUsed: cStats.invUsed, genUsed: cStats.genUsed } };
+        localStorage.setItem(`toc_char_${data.name}`, JSON.stringify(savePayload));
+        setSavedCharacters(prev => Array.from(new Set([...prev, data.name])));
+        alert("建卡完成！能力检定已解锁，配点栏已锁定，存档已保存在本地。");
+        return;
+      }
+    }
+
+    // Save as draft or regular update
+    const payload = { data, isCompleted, frozenStats };
+    localStorage.setItem(`toc_char_${data.name}`, JSON.stringify(payload));
+    setSavedCharacters(prev => Array.from(new Set([...prev, data.name])));
+    alert(isCompleted ? "角色进度保存成功（本地）。" : "角色草稿保存成功（本地）。在点数完美分配完毕前，将无法使用投掷检定工具。");
+  };
+
+  const loadCharacter = (charName: string) => {
+    const raw = localStorage.getItem(`toc_char_${charName}`);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.data) {
+          setData(parsed.data);
+          setIsCompleted(parsed.isCompleted || false);
+          setFrozenStats(parsed.frozenStats || { invUsed: 0, genUsed: 0 });
+          alert("读取成功！");
+        }
+      } catch (e) {
+        console.error(e);
+        alert("读取失败：存档损坏。");
+      }
+    }
+  };
 
 
   const exportPNG = async () => {
@@ -258,8 +335,9 @@ ${data.notes}
           <select
             value={variantIdx}
             onChange={e => setVariantIdx(Number(e.target.value))}
-            className="bg-[#2c2923] border border-stone-700 text-stone-300 text-xs font-bold rounded px-2 py-1.5 outline-none focus:border-[#cca74b] transition-all cursor-pointer"
+            className={`bg-[#2c2923] border border-stone-700 text-stone-300 text-xs font-bold rounded px-2 py-1.5 outline-none focus:border-[#cca74b] transition-all cursor-pointer ${isCompleted ? 'opacity-50 pointer-events-none' : ''}`}
             title={variant.desc}
+            disabled={isCompleted}
           >
             {VARIANT_RULES.map((v, i) => (
               <option key={v.name} value={i}>{v.name}</option>
@@ -331,12 +409,40 @@ ${data.notes}
         </div>
 
         {/* 导出按钮操作区 / Action Buttons */}
-        <div className="flex gap-3 mt-4 md:mt-0 shrink-0">
-          <button onClick={exportPNG} className="flex items-center gap-2 px-4 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-sm font-bold transition-all duration-300 shadow-sm">
-            <ImageIcon size={16} /> 导出图像
+        <div className="flex gap-2 mt-4 md:mt-0 shrink-0">
+          <div className="group relative">
+            <button className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
+              <Download size={14} /> 读取本地
+            </button>
+            <div className="absolute right-0 top-full mt-1 bg-[#1e1c18] border border-[#cca74b] rounded-md shadow-lg py-2 min-w-[150px] z-50 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="px-3 pb-1 mb-1 border-b border-stone-700 text-xs text-stone-400 font-bold">本地存卡记录</div>
+              {savedCharacters.length === 0 ? (
+                <div className="px-3 py-1 text-xs text-stone-500 italic">暂无记录</div>
+              ) : (
+                savedCharacters.map(char => (
+                  <div
+                    key={char}
+                    className="px-3 py-1.5 text-sm text-stone-200 hover:bg-[#cca74b] hover:text-stone-900 cursor-pointer transition-colors break-words max-w-[200px]"
+                    onClick={() => loadCharacter(char)}
+                  >
+                    {char}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <button onClick={saveCharacter} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-emerald-600 hover:text-white border border-stone-700 hover:border-emerald-600 rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm relative group" title="保存在浏览器本地，完成车卡后解锁掷骰功能">
+            <Save size={14} /> 本地保存
+            {!isCompleted && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}
           </button>
-          <button onClick={exportMD} className="flex items-center gap-2 px-4 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-sm font-bold transition-all duration-300 shadow-sm">
-            <FileText size={16} /> 导出 MD
+
+          <div className="w-[1px] h-8 bg-stone-700 mx-1"></div>
+
+          <button onClick={exportPNG} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-blue-600 hover:text-white border border-stone-700 hover:border-blue-600 rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm" title="导出长图">
+            <ImageIcon size={14} /> 图
+          </button>
+          <button onClick={exportMD} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-blue-600 hover:text-white border border-stone-700 hover:border-blue-600 rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm" title="导出纯文本 Markdown">
+            <FileText size={14} /> MD
           </button>
         </div>
       </header>
@@ -372,6 +478,7 @@ ${data.notes}
                 data={data}
                 setData={setData}
                 toggleClassSkill={toggleClassSkill}
+                canRoll={isCompleted}
               />
             )}
 

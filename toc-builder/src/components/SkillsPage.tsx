@@ -7,11 +7,13 @@ interface SkillsPageProps {
     data: any;
     setData: (fn: (prev: any) => any) => void;
     toggleClassSkill: (skill: string) => void;
+    canRoll?: boolean;
 }
 
-export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPageProps) {
+export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = true }: SkillsPageProps) {
     const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
     const [spentPoints, setSpentPoints] = useState<number>(0);
+    const [lastSpentPoints, setLastSpentPoints] = useState<number>(0);
     const [diceResult, setDiceResult] = useState<number | null>(null);
     const [isRolling, setIsRolling] = useState(false);
 
@@ -33,9 +35,10 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
     const currentSkillValue = selectedSkill ? (parseInt(data.skills[selectedSkill] || '0') || 0) : 0;
 
     const handleRoll = () => {
-        if (!selectedSkill) return;
+        if (!selectedSkill || !canRoll) return;
         setIsRolling(true);
         setDiceResult(null);
+        setLastSpentPoints(spentPoints);
 
         // Spend points immediately
         if (spentPoints > 0) {
@@ -47,7 +50,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
             const result = Math.floor(Math.random() * 6) + 1;
             setDiceResult(result);
             setIsRolling(false);
-            setSpentPoints(0); // Reset spent points for next roll
+            setSpentPoints(0); // Reset dropdown to 0 for next roll, but result will use lastSpentPoints
         }, 600);
     };
 
@@ -92,7 +95,11 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
                     >
                         <button
                             className={`w-5 h-5 flex items-center justify-center rounded shrink-0 mr-1 opacity-50 hover:opacity-100 hover:bg-[#daaa39] hover:text-white transition-all text-sm ${selectedSkill === skill ? 'opacity-100 text-[#b54a22]' : 'text-[#daaa39]'}`}
-                            onClick={() => setSelectedSkill(skill)}
+                            onClick={() => {
+                                setSelectedSkill(skill);
+                                setDiceResult(null);
+                                setSpentPoints(0);
+                            }}
                             title="查看详情与检定"
                         >
                             🎲
@@ -168,22 +175,19 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
                                 </div>
                             </div>
 
-                            {/* Skill Description */}
-                            <div className="flex-1 overflow-y-auto mb-6 pr-2">
-                                <div className="text-slate-800 text-[14px] leading-relaxed font-serif whitespace-pre-wrap">
-                                    {SKILL_DESCRIPTIONS[getSkillLabel(selectedSkill)] || "暂无规则说明，请参考规则书相关章节。"}
-                                </div>
-                            </div>
-
-                            {/* Dice Roller */}
-                            <div className="bg-[#f8f4e6] border-[2px] border-[#daaa39] rounded p-4 flex flex-col gap-4 shadow-sm relative overflow-hidden">
-                                <div className="flex justify-between items-center">
+                            {/* Dice Roller (Moved UP) */}
+                            <div className="bg-[#f8f4e6] border-[2px] border-[#daaa39] rounded p-4 flex flex-col gap-4 shadow-sm relative overflow-hidden mb-4 shrink-0">
+                                <div className="flex justify-between items-center relative z-20">
                                     <div className="flex items-center gap-2">
                                         <span className="text-[#5c4a21] font-bold text-sm">消耗点数:</span>
                                         <select
                                             value={spentPoints}
-                                            onChange={(e) => setSpentPoints(Number(e.target.value))}
-                                            className="bg-white border border-[#daaa39] outline-none rounded p-1 text-sm font-bold text-slate-800 w-16 text-center cursor-pointer"
+                                            onChange={(e) => {
+                                                setSpentPoints(Number(e.target.value));
+                                                setDiceResult(null); // Clear previous result when changing points
+                                            }}
+                                            className="bg-white border border-[#daaa39] outline-none rounded p-1 text-sm font-bold text-slate-800 w-16 text-center cursor-pointer disabled:bg-stone-100 disabled:text-stone-400"
+                                            disabled={!canRoll || isRolling}
                                         >
                                             {Array.from({ length: currentSkillValue + 1 }, (_, i) => (
                                                 <option key={i} value={i}>{i}</option>
@@ -191,17 +195,21 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
                                         </select>
                                     </div>
 
-                                    <button
-                                        onClick={handleRoll}
-                                        disabled={isRolling}
-                                        className="bg-[#cca74b] hover:bg-[#b54a22] text-[#1e1c18] hover:text-white px-6 py-2 rounded font-black tracking-widest transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                    >
-                                        <span className="text-lg">🎲</span>
-                                        {isRolling ? '投掷中...' : '进行检定'}
-                                    </button>
+                                    <div className="flex flex-col items-end">
+                                        <button
+                                            onClick={handleRoll}
+                                            disabled={isRolling || !canRoll}
+                                            className="bg-[#cca74b] hover:bg-[#b54a22] text-[#1e1c18] hover:text-white px-6 py-2 rounded font-black tracking-widest transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                            title={!canRoll ? "车卡分配未完成，无法进行检定" : ""}
+                                        >
+                                            <span className="text-lg">🎲</span>
+                                            {isRolling ? '投掷中...' : '进行检定'}
+                                        </button>
+                                        {!canRoll && <span className="text-xs text-red-500 font-bold mt-1 absolute -bottom-4 right-0">未完成创建，停用检定</span>}
+                                    </div>
                                 </div>
 
-                                <div className="border-t border-[#daaa39]/50 pt-3 flex items-center justify-between min-h-[60px]">
+                                <div className="border-t border-[#daaa39]/50 pt-3 flex items-center justify-between min-h-[60px] relative z-20">
                                     {diceResult !== null ? (
                                         <>
                                             <div className="flex gap-4 text-slate-800 items-baseline">
@@ -212,30 +220,37 @@ export default function SkillsPage({ data, setData, toggleClassSkill }: SkillsPa
                                                 <span className="text-lg font-bold text-stone-400">+</span>
                                                 <div className="flex flex-col items-center">
                                                     <span className="text-xs font-bold text-stone-500">消耗</span>
-                                                    <span className="text-2xl font-black text-[#5c4a21]">{diceResult - (currentSkillValue > 0 && spentPoints === 0 ? diceResult - diceResult : -spentPoints) - spentPoints === 0 ? spentPoints : Math.max(0, spentPoints)}</span>
+                                                    <span className="text-2xl font-black text-[#5c4a21]">{lastSpentPoints}</span>
                                                 </div>
                                                 <span className="text-lg font-bold text-stone-400">=</span>
                                             </div>
                                             <div className="flex flex-col items-center pr-4">
                                                 <span className="text-xs font-bold text-stone-500">检定总值</span>
-                                                <span className={`text-4xl font-black ${diceResult + spentPoints >= 4 ? 'text-emerald-600' : 'text-red-600'}`}>
-                                                    {diceResult + spentPoints}
+                                                <span className={`text-4xl font-black ${diceResult + lastSpentPoints >= 4 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                    {diceResult + lastSpentPoints}
                                                 </span>
                                             </div>
                                         </>
                                     ) : (
                                         <div className="text-stone-400 text-sm font-bold italic w-full text-center">
-                                            投掷D6并加上消耗点数计算结果。一般测试难度为4。
+                                            选择消耗点数并投掷 D6，基础成功难度为 4。
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Animated overlay to simulate dice rolling */}
                                 {isRolling && (
-                                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">
+                                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-30">
                                         <span className="text-5xl animate-[spin_0.3s_linear_infinite]">🎲</span>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Skill Description (Moved DOWN) */}
+                            <div className="flex-1 overflow-y-auto mb-2 pr-2 border-t border-[#daaa39]/30 pt-4">
+                                <div className="text-slate-800 text-[14px] leading-relaxed font-serif whitespace-pre-wrap">
+                                    {SKILL_DESCRIPTIONS[getSkillLabel(selectedSkill)] || "暂无规则说明，请参考规则书相关章节。"}
+                                </div>
                             </div>
                         </div>
                     )}
