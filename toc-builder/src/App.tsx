@@ -9,6 +9,7 @@ import {
   FREE_SANITY, FREE_STABILITY, FREE_HEALTH
 } from './data/constants';
 import InfoPage from './components/InfoPage';
+import SkillsPage from './components/SkillsPage';
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -468,42 +469,12 @@ ${data.notes}
               />
             )}
 
-            {activeTab === 'memo' && (
-              <div className="flex flex-row gap-6 w-full min-h-[800px]">
-                {/* 战役备忘录 */}
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col flex-1 relative shadow-sm">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                  <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-4 tracking-widest text-center">战役备忘录（游戏记录、NPC、线索等）</h2>
-                  <textarea
-                    name="campaignMemo"
-                    value={data.campaignMemo}
-                    onChange={handleInput}
-                    className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[14px] leading-relaxed font-serif focus:bg-[#f6f1d3]/80 transition-all"
-                    placeholder="在此记录冒险中的重要线索、遇到的NPC、以及其他细节..."
-                  />
-                </div>
-
-                {/* 装备信息 */}
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-6 flex flex-col flex-1 relative shadow-sm">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                  <h2 className="text-lg font-bold text-[#5c4a21] border-b border-[#daaa39] pb-1 mb-4 tracking-widest text-center">装备与财物</h2>
-                  <textarea
-                    name="equipment"
-                    value={data.equipment}
-                    onChange={handleInput}
-                    className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[14px] leading-relaxed font-serif focus:bg-[#f6f1d3]/80 transition-all"
-                    placeholder="武器、道具、资产、借条等..."
-                  />
-                </div>
-              </div>
+            {activeTab === 'skills' && (
+              <SkillsPage
+                data={data}
+                setData={setData}
+                toggleClassSkill={toggleClassSkill}
+              />
             )}
 
             {activeTab === 'guide' && (
