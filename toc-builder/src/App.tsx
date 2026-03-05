@@ -11,10 +11,11 @@ import {
 import InfoPage from './components/InfoPage';
 import SkillsPage from './components/SkillsPage';
 import MemoPage from './components/MemoPage';
+import RulesPage from './components/RulesPage';
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'skills' | 'memo' | 'guide'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'skills' | 'memo' | 'guide' | 'rules'>('info');
   const [showOccupations, setShowOccupations] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
   const [showPillars, setShowPillars] = useState(false);
@@ -327,6 +328,12 @@ ${data.notes}
           >
             创建指南
           </button>
+          <button
+            onClick={() => setActiveTab('rules')}
+            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'rules' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+          >
+            规则速览
+          </button>
         </div>
 
         {/* Point Allocation Bar */}
@@ -500,6 +507,10 @@ ${data.notes}
                   </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'rules' && (
+              <RulesPage />
             )}
 
           </div>
