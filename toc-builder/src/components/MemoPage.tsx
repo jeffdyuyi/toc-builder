@@ -39,7 +39,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
         setData((prev: any) => ({
             ...prev,
             equipmentItems: [...(prev.equipmentItems || []), {
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).slice(2, 11),
                 name: preset?.name || '',
                 qty: preset ? '1' : '',
                 price: preset?.price || '',
@@ -115,8 +115,8 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                                         </tr>
                                     ) : (
                                         equipmentItems.map((item, i) => (
-                                            <tr key={item.id} className="h-8 border border-[#daaa39] group">
-                                                <td className="border border-[#daaa39] text-center p-0">
+                                            <tr key={item.id} className="border border-[#daaa39] group">
+                                                <td className="border border-[#daaa39] text-center p-0 align-middle">
                                                     <button
                                                         className="text-stone-400 hover:text-red-500 font-bold px-2 py-1 opacity-50 group-hover:opacity-100 transition-opacity"
                                                         onClick={() => removeItem(i)}
@@ -125,11 +125,11 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                                                         ✕
                                                     </button>
                                                 </td>
-                                                <td className="border border-[#daaa39] p-0"><input className={tableInputCls} value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0"><input className={tableInputCls} value={item.qty} onChange={e => updateItem(i, 'qty', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0"><input className={tableInputCls} value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0"><input className={tableInputCls} value={item.note1} onChange={e => updateItem(i, 'note1', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0"><input className={tableInputCls} value={item.note2} onChange={e => updateItem(i, 'note2', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.qty} onChange={e => updateItem(i, 'qty', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.note1} onChange={e => updateItem(i, 'note1', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.note2} onChange={e => updateItem(i, 'note2', e.target.value)} /></td>
                                             </tr>
                                         ))
                                     )}
