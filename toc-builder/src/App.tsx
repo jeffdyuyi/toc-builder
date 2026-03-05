@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import {
   ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS,
-  OCCUPATION_DESC, CREATION_GUIDE,
+  OCCUPATION_DESC,
   VARIANT_RULES, INVESTIGATION_SKILLS, parseCreditRange,
   FREE_SANITY, FREE_STABILITY, FREE_HEALTH
 } from './data/constants';
@@ -15,7 +15,7 @@ import RulesPage from './components/RulesPage';
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'skills' | 'memo' | 'guide' | 'rules'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'skills' | 'memo' | 'guide_rules'>('info');
   const [showOccupations, setShowOccupations] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
   const [showPillars, setShowPillars] = useState(false);
@@ -323,16 +323,10 @@ ${data.notes}
             战役备忘录
           </button>
           <button
-            onClick={() => setActiveTab('guide')}
-            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'guide' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
+            onClick={() => setActiveTab('guide_rules')}
+            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'guide_rules' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
           >
-            创建指南
-          </button>
-          <button
-            onClick={() => setActiveTab('rules')}
-            className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'rules' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
-          >
-            规则速览
+            指南与规则
           </button>
         </div>
 
@@ -493,23 +487,7 @@ ${data.notes}
               <MemoPage data={data} setData={setData} />
             )}
 
-            {activeTab === 'guide' && (
-              <div className="flex flex-col gap-6 w-full min-h-[800px]">
-                <div className="border-[3px] border-[#daaa39] outline outline-1 outline-offset-[3px] outline-[#daaa39] bg-white/50 p-12 flex flex-col flex-1 relative shadow-sm">
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#daaa39]"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#daaa39]"></div>
-
-                  <h2 className="text-2xl font-bold text-[#5c4a21] border-b-2 border-[#daaa39] pb-4 mb-8 tracking-[0.2em] text-center font-['STKaiti']">创建调查员简要说明</h2>
-                  <div className="text-[16px] text-slate-800 space-y-6 text-justify font-serif leading-[1.8] px-4 md:px-12">
-                    {CREATION_GUIDE.map((p, i) => <p key={i} className="indent-[2em]">{p}</p>)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'rules' && (
+            {activeTab === 'guide_rules' && (
               <RulesPage />
             )}
 
