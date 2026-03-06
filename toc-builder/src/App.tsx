@@ -19,6 +19,7 @@ function App() {
   const [showOccupations, setShowOccupations] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
   const [showPillars, setShowPillars] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   // Point allocation state
   const [variantIdx, setVariantIdx] = useState(0);
@@ -297,7 +298,12 @@ ${data.notes}
       {/* 悬浮顶栏 / Sticky Header (提高了操作便捷性) */}
       <header className="sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center bg-[#1e1c18]/90 backdrop-blur-md shadow-lg px-6 py-4 border-b border-stone-800 mb-8 w-full">
         <div className="flex-1 flex justify-center md:justify-start">
-          <h1 className="text-3xl md:text-4xl leading-none font-black text-[#cca74b] tracking-[0.2em] ml-[0.2em]" style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
+          <h1
+            className="text-xl md:text-2xl leading-none font-black text-[#cca74b] tracking-[0.2em] ml-[0.2em] cursor-pointer hover:brightness-125 transition-all"
+            style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+            onClick={() => setShowAbout(true)}
+            title="点击查看作者信息与免责声明"
+          >
             克苏鲁迷踪
           </h1>
         </div>
@@ -494,6 +500,46 @@ ${data.notes}
           </div>
         </div>
       </div>
+
+      {/* About / Disclaimer Modal */}
+      {showAbout && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowAbout(false)}>
+          <div className="bg-[#1e1c18] border border-[#cca74b] rounded-lg max-w-lg w-full p-6 text-stone-300 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setShowAbout(false)}
+              className="absolute top-4 right-4 text-stone-500 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl font-bold text-[#cca74b] mb-4 border-b border-stone-800 pb-2">免责声明</h2>
+            <div className="space-y-4 text-sm leading-relaxed">
+              <p>
+                本工具由 <strong className="text-stone-100">不咕鸟（基德）</strong> 开发。内容基于 <strong className="text-stone-100">克苏鲁迷踪中文规则书</strong> （乐博睿官方代理） ，辅以 AI 技术制作。
+              </p>
+              <p>
+                本工具仅供 <strong className="text-stone-100">个人及亲友团</strong> 快速建卡与跑团交流使用，严禁用于任何商业用途。 本工具与TOC无官方关联，所有官方规则版权归原作者所有。
+              </p>
+
+              <div className="mt-6 pt-4 border-t border-stone-800">
+                <h3 className="text-lg font-bold text-[#cca74b] mb-2">寻找组织</h3>
+                <p>欢迎加入成都本地线下面团秘密基地TRPG俱乐部，寻找你的冒险伙伴！</p>
+                <div className="mt-2 space-y-1">
+                  <p>🌐 <a href="https://nogubird.top/" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">https://nogubird.top/</a></p>
+                  <p>💬 QQ群: <span className="text-stone-100 font-mono select-all">691707475</span></p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowAbout(false)}
+                className="px-4 py-2 bg-[#cca74b] text-[#1e1c18] font-bold rounded hover:bg-[#d4b563] transition-colors"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
