@@ -1,3 +1,4 @@
+import AvatarPicker from './AvatarPicker';
 import { pool, level, updateAbility } from '../data/character';
 import type { Character, CharacterSetter } from '../data/character';
 import { useState } from 'react';
@@ -27,6 +28,7 @@ const inputCls = "w-full bg-transparent border-b border-[#daaa39] outline-none t
 const labelCls = "text-[#5c4a21] font-bold w-[72px] tracking-widest leading-none shrink-0 text-[14px]";
 
 export default function InfoPage({ data, setData, showOccupations, setShowOccupations, showDrives, setShowDrives, showPillars, setShowPillars, isCompleted = false }: InfoPageProps) {
+    const [showAvatars, setShowAvatars] = useState(false);
     const [infoModal, setInfoModal] = useState<{ title: string, content: string } | null>(null);
 
     const openInfo = (title: string) => {
@@ -116,6 +118,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
 
     return (
         <>
+            {showAvatars && <AvatarPicker onClose={() => setShowAvatars(false)} onUse={avatar => { setData(prev => ({ ...prev, avatar })); setShowAvatars(false); }} />}
             <DualPage
                 left={
                     <>
@@ -124,9 +127,9 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                             <div className="info-basic flex gap-3">
                                 <div className="w-[120px] shrink-0 flex flex-col items-center">
                                     <div className="w-full min-h-[140px] border-[2px] border-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
-                                        <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center w-full">
+                                        <label aria-label="上传自定义头像" title="上传自定义头像" className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center w-full">
                                             {data.avatar ? (
-                                                <img src={data.avatar} alt="Avatar" className="w-full h-[130px] object-cover absolute inset-0" />
+                                                <img src={data.avatar} alt="角色头像" className="w-full h-[130px] object-cover absolute inset-0" />
                                             ) : (
                                                 <div className="text-[#daaa39] group-hover:text-[#c89b3c] flex flex-col items-center transition-colors">
                                                     <ImageIcon size={24} className="mb-1" />
@@ -140,6 +143,8 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                             placeholder="玩家名"
                                         />
                                     </div>
+                                    <button onClick={() => setShowAvatars(true)} className="avatar-library-trigger mt-2 min-h-[36px] w-full rounded border border-[#daaa39] bg-[#f8f4e6] px-2 text-xs font-bold text-[#5c4a21] hover:bg-[#e8dfc5]">选择内置头像</button>
+                                    <span className="avatar-upload-hint mt-1 text-[10px] text-[#8b6d2a]">点击头像可自定义上传</span>
                                 </div>
                                 <div className="min-w-0 flex-1 flex flex-col justify-between space-y-[4px]">
                                     <div className="flex text-[14px] items-center">

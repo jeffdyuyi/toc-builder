@@ -1,0 +1,216 @@
+{
+  "sourcePage": "https://labyrpg.com/products/toc/resources.html",
+  "permission": "项目维护者确认已取得明确使用许可；官网未提供可核验的公开再分发许可证。",
+  "portraits": [
+    {
+      "id": "portrait-01",
+      "label": "三十年代头像 01",
+      "file": "portrait-01.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-1-2-1276x1866.jpg",
+      "sha256": "ac5186c9ec5e3436e84b6888a0c5aa0ca00d8c59d520879e5b1c1d89a2de1bab"
+    },
+    {
+      "id": "portrait-02",
+      "label": "三十年代头像 02",
+      "file": "portrait-02.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-3-2-1276x1866.jpg",
+      "sha256": "bf1bce90e4aaec87410708dd601aa9cdb005d584c4176729c26a9ec42a3a34df"
+    },
+    {
+      "id": "portrait-03",
+      "label": "三十年代头像 03",
+      "file": "portrait-03.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-5-1276x1866.jpg",
+      "sha256": "573352de38221dfd70e130753645d554c57a264217f1a33df395a7028e186a0e"
+    },
+    {
+      "id": "portrait-04",
+      "label": "三十年代头像 04",
+      "file": "portrait-04.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-7-1-1276x1866.jpg",
+      "sha256": "ed131e63deedf558d857d13d6275cd0a0453614aad5051c8eab8339ed878db00"
+    },
+    {
+      "id": "portrait-05",
+      "label": "三十年代头像 05",
+      "file": "portrait-05.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-8-1276x1866.jpg",
+      "sha256": "66cb95a5616d2f0915562d8ea78664850140d12de0d17a1e6147226fd094641d"
+    },
+    {
+      "id": "portrait-06",
+      "label": "三十年代头像 06",
+      "file": "portrait-06.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-9-1276x1866.jpg",
+      "sha256": "4d35957b690fa28df7a4519c61d146c3ddb1f128e6e9fae3db365afc331c031b"
+    },
+    {
+      "id": "portrait-07",
+      "label": "三十年代头像 07",
+      "file": "portrait-07.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-10-1276x1866.jpg",
+      "sha256": "ad0ce22ac700682e613a435168535d9293f989942eba828d688960a9a2dd62b9"
+    },
+    {
+      "id": "portrait-08",
+      "label": "三十年代头像 08",
+      "file": "portrait-08.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-11-1276x1866.jpg",
+      "sha256": "e1ad18778d16d5402d6297e483742b96b4854ab057882f69d03583c2629b1bc6"
+    },
+    {
+      "id": "portrait-09",
+      "label": "三十年代头像 09",
+      "file": "portrait-09.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-12-1276x1866.jpg",
+      "sha256": "897f1235e5d37c04fc1225dac006fbe68f1845a68e9c102f984979e6bd04f70d"
+    },
+    {
+      "id": "portrait-10",
+      "label": "三十年代头像 10",
+      "file": "portrait-10.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-15-1276x1866.jpg",
+      "sha256": "7386a3dd428cd399af8d531a3abf9328436b44de4d1b367346ab82c5bcf1f229"
+    },
+    {
+      "id": "portrait-11",
+      "label": "三十年代头像 11",
+      "file": "portrait-11.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-16-1276x1866.jpg",
+      "sha256": "e6c28d0f788f5b5bb146c01f13365146cd03b7ff71bceb2b48ea14c55b1e839a"
+    },
+    {
+      "id": "portrait-12",
+      "label": "三十年代头像 12",
+      "file": "portrait-12.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-17-1276x1866.jpg",
+      "sha256": "849f79128991261ed25e4ab496da9917614b97b5741245806c6d250ae22326aa"
+    },
+    {
+      "id": "portrait-13",
+      "label": "三十年代头像 13",
+      "file": "portrait-13.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-18-1276x1866.jpg",
+      "sha256": "099f82fd67eafd9a89c3c00c890ba8449fea5745235dbde3c7604d8a6f1bfbaf"
+    },
+    {
+      "id": "portrait-14",
+      "label": "三十年代头像 14",
+      "file": "portrait-14.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-19-1276x1866.jpg",
+      "sha256": "58cfe4804ea0f6cc7a8eef13e56f33a33ccbf017f01f1c12441d0beb2515c136"
+    },
+    {
+      "id": "portrait-15",
+      "label": "三十年代头像 15",
+      "file": "portrait-15.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-20-1276x1866.jpg",
+      "sha256": "76da3003c388f19ae443b17ca38dcacbc40ab166d823bfb409133d55b0760518"
+    },
+    {
+      "id": "portrait-16",
+      "label": "三十年代头像 16",
+      "file": "portrait-16.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-21-1276x1866.jpg",
+      "sha256": "ab82983ff38a0999c1d0ee6036b8bd234e1f94fd3aa81731eb5acc50a2c13d7c"
+    },
+    {
+      "id": "portrait-17",
+      "label": "三十年代头像 17",
+      "file": "portrait-17.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-22-1276x1866.jpg",
+      "sha256": "c6b4ca588469f13b85a3fcbc1ba452f718df74f42c534910a27b560b3796dfaf"
+    },
+    {
+      "id": "portrait-18",
+      "label": "三十年代头像 18",
+      "file": "portrait-18.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-23-1276x1866.jpg",
+      "sha256": "df429d0ce296724dbe721fcc5d1ebdbf1b75bbdf94f261d2b6f746ccabda76da"
+    },
+    {
+      "id": "portrait-19",
+      "label": "三十年代头像 19",
+      "file": "portrait-19.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-24-1276x1866.jpg",
+      "sha256": "e0d4475f63a05179f26c54451b6d43790e67f085d948f2c0aa703d4d2bdad124"
+    },
+    {
+      "id": "portrait-20",
+      "label": "三十年代头像 20",
+      "file": "portrait-20.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-25-1276x1866.jpg",
+      "sha256": "b277ba05d9f0cb856af30355d259cb65e12339ae0c5f214cc0da6afdb7ab5169"
+    },
+    {
+      "id": "portrait-21",
+      "label": "三十年代头像 21",
+      "file": "portrait-21.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-26-1276x1866.jpg",
+      "sha256": "8664c23269e4bd11c04a0c46a2eff720ade8a5ce2768a038ec74989bc92ae181"
+    },
+    {
+      "id": "portrait-22",
+      "label": "三十年代头像 22",
+      "file": "portrait-22.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-27-1276x1866.jpg",
+      "sha256": "160d6538a5873ed45482059e9cbcc47258442a3b238d61e881b9c5dc3c0ad3a3"
+    },
+    {
+      "id": "portrait-23",
+      "label": "三十年代头像 23",
+      "file": "portrait-23.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-28-1276x1866.jpg",
+      "sha256": "9111c779920c027d589ba0c09cad86d875ef299a0ffda01b20d200f91cc2a3ae"
+    },
+    {
+      "id": "portrait-24",
+      "label": "三十年代头像 24",
+      "file": "portrait-24.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-29-1276x1866.jpg",
+      "sha256": "f66ee945d3c5808791190cfae76fe6f3880ff27317337e2e759c122cb8c6db46"
+    },
+    {
+      "id": "portrait-25",
+      "label": "三十年代头像 25",
+      "file": "portrait-25.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-31-1276x1866.jpg",
+      "sha256": "55b2d1870cf178f35406940853a59cbbdb24da40557a932ab5fee48a549f6d06"
+    },
+    {
+      "id": "portrait-26",
+      "label": "三十年代头像 26",
+      "file": "portrait-26.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-30-1276x1866.jpg",
+      "sha256": "4678fdc6bd247d83215aa79025875865d88c2f6a391c1acd18e2be8b8ef313f1"
+    },
+    {
+      "id": "portrait-27",
+      "label": "三十年代头像 27",
+      "file": "portrait-27.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-32-1276x1866.jpg",
+      "sha256": "3b09ad71f9c888d067d46218f4d64761fa79462999de80cb3c1bf91cfe92f197"
+    },
+    {
+      "id": "portrait-28",
+      "label": "三十年代头像 28",
+      "file": "portrait-28.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-33-1276x1866.jpg",
+      "sha256": "7e2a0a186b4a6657433d016bc5f1daec59d43c2d0e45d3210bdc8404835c6608"
+    },
+    {
+      "id": "portrait-29",
+      "label": "三十年代头像 29",
+      "file": "portrait-29.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-34-1276x1866.jpg",
+      "sha256": "741ca234b6c4673e094c3126f9c7a50ea64a28bc4f4eb6dc0e05a99b9aa01517"
+    },
+    {
+      "id": "portrait-30",
+      "label": "三十年代头像 30",
+      "file": "portrait-30.jpg",
+      "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-2-2-1276x1866.jpg",
+      "sha256": "733e05008502877f525721da07ee3ce81e5ba1ee2c66e64fd67976956d65c3de"
+    }
+  ]
+}

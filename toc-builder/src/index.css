@@ -76,3 +76,6 @@ button, summary, select, label { touch-action: manipulation; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+.avatar-library-trigger, .avatar-upload-hint { display: none; }
+.live-sheet .avatar-library-trigger, .live-sheet .avatar-upload-hint { display: block; }

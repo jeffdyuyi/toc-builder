@@ -86,3 +86,16 @@ assert.throws(() => saveWithBackup({ ...storage, setItem: () => { throw new Erro
 assert.equal(store.toc_char_原角色, '新存档');
 assert.equal(store[BACKUP_PREFIX + '原角色'], '旧存档');
 console.log('通过：正式存档与自动草稿隔离、同名覆盖上一版备份、重复保存保留备份、写入失败不覆盖原存档。');
+
+const crypto = require('node:crypto');
+const avatarRoot = path.resolve(__dirname, '../public/avatars/labyrpg-1930s');
+const avatarManifest = JSON.parse(fs.readFileSync(path.join(avatarRoot, 'manifest.json'), 'utf8'));
+assert.equal(avatarManifest.portraits.length, 30);
+assert.equal(new Set(avatarManifest.portraits.map(entry => entry.id)).size, 30);
+for (const entry of avatarManifest.portraits) {
+ const raw = fs.readFileSync(path.join(avatarRoot, entry.file));
+ assert.equal(raw.subarray(0, 2).toString('hex'), 'ffd8');
+ assert.equal(raw.subarray(-2).toString('hex'), 'ffd9');
+ assert.equal(crypto.createHash('sha256').update(raw).digest('hex'), entry.sha256);
+}
+console.log('通过：30 张内置头像原始文件完整、编号唯一、校验值一致。');

@@ -659,6 +659,10 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
                 </div>
               </div>
               <div className="pt-4 border-t border-stone-800">
+                <h3 className="text-lg font-bold text-[#cca74b] mb-2">内置头像来源</h3>
+                <p>内置的 30 张三十年代角色头像来自<a href="https://labyrpg.com/products/toc/resources.html" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">乐博睿《克苏鲁迷踪》免费资源页面</a>。图片版权归原权利人所有，由项目维护者确认获得使用许可后收录，用于本工具的非商业角色创建与跑团交流；不代表官方认可本工具。</p>
+              </div>
+              <div className="pt-4 border-t border-stone-800">
                 <a href="https://ifdian.net/a/nogubird" target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center rounded border border-[#cca74b]/60 px-4 text-[#cca74b] hover:bg-[#cca74b]/10">为作者加油 ↗</a>
               </div>
             </div>
