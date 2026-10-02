@@ -627,7 +627,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
       {/* About / Disclaimer Modal */}
       {showAbout && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowAbout(false)}>
-          <div className="bg-[#1e1c18] border border-[#cca74b] rounded-lg max-w-lg w-full p-6 text-stone-300 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#1e1c18] border border-[#cca74b] rounded-lg max-w-lg w-full max-h-[85dvh] overflow-y-auto p-6 text-stone-300 shadow-2xl relative" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setShowAbout(false)}
               className="absolute top-4 right-4 text-stone-500 hover:text-white transition-colors"
@@ -637,19 +637,29 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
             <h2 className="text-2xl font-bold text-[#cca74b] mb-4 border-b border-stone-800 pb-2">免责声明</h2>
             <div className="space-y-4 text-sm leading-relaxed">
               <p>
-                本工具由 <strong className="text-stone-100">不咕鸟（基德）</strong> 开发。内容基于 <strong className="text-stone-100">克苏鲁迷踪中文规则书</strong> （乐博睿官方代理） ，辅以 AI 技术制作。
+                本工具由 <strong className="text-stone-100">不咕鸟（哈基米德）</strong> 开发。内容基于 <strong className="text-stone-100">克苏鲁迷踪中文规则书</strong> （乐博睿官方代理） ，辅以 AI 技术制作。
               </p>
+              <p>辅助 AI：<span className="text-stone-100">Antigravity Gemini 3.8 / GPT-6.1</span></p>
               <p>
                 本工具仅供 <strong className="text-stone-100">个人及亲友团</strong> 快速建卡与跑团交流使用，严禁用于任何商业用途。 本工具与TOC无官方关联，所有官方规则版权归原作者所有。
               </p>
 
               <div className="mt-6 pt-4 border-t border-stone-800">
+                <h3 className="text-lg font-bold text-[#cca74b] mb-2">联系作者与创作交流</h3>
+                <p>欢迎直接联系或者加群讨论模组、规则以及造轮子、修 BUG。</p>
+                <p className="mt-2">不咕鸟创作交流群：<span className="text-stone-100 font-mono select-all">261751459</span></p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-stone-800">
                 <h3 className="text-lg font-bold text-[#cca74b] mb-2">寻找组织</h3>
                 <p>欢迎加入成都本地线下面团秘密基地TRPG俱乐部，寻找你的冒险伙伴！</p>
                 <div className="mt-2 space-y-1">
-                  <p>🌐 <a href="https://nogubird.top/" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">https://nogubird.top/</a></p>
-                  <p>💬 QQ群: <span className="text-stone-100 font-mono select-all">691707475</span></p>
+                  <p>成都秘密基地 TRPG 俱乐部网址：<a href="https://nogubird.top/" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">https://nogubird.top/</a></p>
+                  <p>成都秘密基地 TRPG 俱乐部群：<span className="text-stone-100 font-mono select-all">691707475</span></p>
                 </div>
+              </div>
+              <div className="pt-4 border-t border-stone-800">
+                <a href="https://ifdian.net/a/nogubird" target="_blank" rel="noreferrer" className="inline-flex min-h-[44px] items-center rounded border border-[#cca74b]/60 px-4 text-[#cca74b] hover:bg-[#cca74b]/10">为作者加油 ↗</a>
               </div>
             </div>
             <div className="mt-6 flex justify-end">
