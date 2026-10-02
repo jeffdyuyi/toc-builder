@@ -44,7 +44,7 @@ assert.equal(PRESET_CHARACTERS.length, 5);
 assert.equal(new Set(PRESET_CHARACTERS.map(preset => preset.id)).size, 5);
 assert.deepEqual(PRESET_CHARACTERS.map(preset => preset.save.data.name), ['肯尼斯·菲尔', '罗杰·菲尔', '诺曼·莱特', '简·乔伊斯-克利夫兰', '诺克斯·梅克皮斯']);
 for (const preset of PRESET_CHARACTERS) {
- const source = fs.readFileSync(path.resolve(__dirname, `../../预设角色卡_${preset.save.data.name}.json`), 'utf8');
+ const source = fs.readFileSync(path.resolve(__dirname, `../src/data/presetCards/预设角色卡_${preset.save.data.name}.json`), 'utf8');
  assert.deepEqual(preset.save, JSON.parse(source));
  const copy = createPresetSave(preset);
  assert.equal(copy.isCompleted, true);
