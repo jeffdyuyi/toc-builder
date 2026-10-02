@@ -1,7 +1,10 @@
+import { createPresetSave } from './data/presets';
+import type { PresetCharacter } from './data/presets';
+import PresetPicker from './components/PresetPicker';
 import { normalizeCharacter, level } from './data/character';
 import type { Character } from './data/character';
 import { useRef, useState, useMemo } from 'react';
-import { FileText, Image as ImageIcon, Save, Download } from 'lucide-react';
+import { FileText, Image as ImageIcon, Save, Download, Users } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import {
   ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS,
@@ -15,6 +18,8 @@ import MemoPage from './components/MemoPage';
 import RulesPage from './components/RulesPage';
 
 function App() {
+  const [showPresets, setShowPresets] = useState(false);
+  const [characterRevision, setCharacterRevision] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [showSaved, setShowSaved] = useState(false);
   const [exportImage, setExportImage] = useState<string | null>(null);
@@ -206,19 +211,31 @@ function App() {
   };
   const exportJSON = () => saveAs(new Blob([JSON.stringify({ version: 2, settings, data, isCompleted, frozenStats }, null, 2)], { type: 'application/json' }), `TOC角色卡_${data.name || '未命名'}.json`);
 
-  const applySave = (raw: string) => {
+  const applySave = (raw: string, notify = true) => {
     const parsed = JSON.parse(raw);
     if (!parsed.data || !parsed.data.skills || typeof parsed.data.name !== 'string' || !Array.isArray(parsed.data.equipmentItems ?? [])) throw new Error('存档格式无效');
     const restored = normalizeCharacter(parsed.data);
     setData(restored);
+    setExportImage(null);
     setVariantIdx(Math.max(0, Math.min(VARIANT_RULES.length - 1, Math.trunc(Number(parsed.settings?.variantIdx) || 0))));
     setPlayerCount(Math.max(1, Math.min(10, Math.trunc(Number(parsed.settings?.playerCount) || 4))));
     setCustomInvPoints(parsed.settings?.customInvPoints == null ? null : Math.max(0, Math.trunc(Number(parsed.settings.customInvPoints) || 0)));
     setCustomGenPoints(parsed.settings?.customGenPoints == null ? null : Math.max(0, Math.trunc(Number(parsed.settings.customGenPoints) || 0)));
     setIsCompleted(parsed.isCompleted === true);
     setFrozenStats({ invUsed: Number(parsed.frozenStats?.invUsed) || 0, genUsed: Number(parsed.frozenStats?.genUsed) || 0 });
-    alert('读取成功！旧存档若已消耗能力，请核对原始能力等级。');
+    setCharacterRevision(value => value + 1);
+    if (notify) alert('读取成功！旧存档若已消耗能力，请核对原始能力等级。');
   };
+  const usePreset = (preset: PresetCharacter) => {
+    applySave(JSON.stringify(createPresetSave(preset)), false);
+    setShowPresets(false);
+    setShowSaved(false);
+    setShowOccupations(false);
+    setShowDrives(false);
+    setShowPillars(false);
+    setActiveTab('info');
+  };
+
   const loadCharacter = (charName: string) => {
     try { const raw = localStorage.getItem(`toc_char_${charName}`); if (raw) applySave(raw); }
     catch { alert('读取失败：存档格式无效或浏览器存储不可用。'); }
@@ -427,6 +444,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
 
         {/* 导出按钮操作区 / Action Buttons */}
         <div className="flex flex-wrap justify-center gap-2 mt-4 md:mt-0 shrink-0">
+          <button onClick={() => setShowPresets(true)} className="flex items-center gap-2 rounded-md bg-[#cca74b] px-4 py-2 text-sm font-bold text-[#1e1c18] shadow-sm hover:bg-[#d4b563]" aria-haspopup="dialog"><Users size={16} />使用预设角色</button>
           <div className="group relative">
             <button onClick={() => setShowSaved(value => !value)} aria-expanded={showSaved} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
               <Download size={14} /> 读取本地
@@ -496,7 +514,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
 
             {activeTab === 'skills' && (
               <SkillsPage
-                key={data.name}
+                key={characterRevision}
                 data={data}
                 setData={setData}
                 toggleClassSkill={toggleClassSkill}
@@ -505,7 +523,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
             )}
 
             {activeTab === 'memo' && (
-              <MemoPage data={data} setData={setData} />
+              <MemoPage key={characterRevision} data={data} setData={setData} />
             )}
 
             {activeTab === 'guide_rules' && (
@@ -521,7 +539,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
           <h1 className="text-2xl font-bold mb-6">克苏鲁迷踪角色卡 · {data.name}</h1>
           <InfoPage data={data} setData={setData} isCompleted={isCompleted} showOccupations={false} setShowOccupations={() => {}} showDrives={false} setShowDrives={() => {}} showPillars={false} setShowPillars={() => {}} />
           <SkillsPage data={data} setData={setData} toggleClassSkill={() => {}} canRoll={isCompleted} />
-          <MemoPage data={data} setData={setData} />
+          <MemoPage key={characterRevision} data={data} setData={setData} />
         </div>
       </div>
 
@@ -534,6 +552,8 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
           <img src={exportImage} alt="完整角色卡导出预览" className="w-full" />
         </div>
       </div>}
+
+      {showPresets && <PresetPicker onClose={() => setShowPresets(false)} onUse={usePreset} currentName={data.name} hasCurrentCharacter={Object.values(data).some(value => typeof value === 'string' && value.trim() !== '') || Object.keys(data.skills).length > 0 || data.equipmentItems.length > 0 || data.sanity !== 4 || data.stability !== 1 || data.health !== 1} />}
 
       {/* About / Disclaimer Modal */}
       {showAbout && (
