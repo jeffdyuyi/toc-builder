@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { CREATION_GUIDE } from '../data/constants';
 
-const CollapsibleSection = ({ title, children, colorKey = 'default', defaultOpen = false }: any) => {
+const CollapsibleSection = ({ title, children, colorKey = 'default', defaultOpen = false }: { title: string; children: React.ReactNode; colorKey?: string; defaultOpen?: boolean }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
-    const colors: any = {
+    const colors: Record<string, { text: string; border: string }> = {
         default: { text: 'text-[#8a2a2a]', border: 'border-[#8a2a2a]' },
         gray: { text: 'text-[#5c4a21]', border: 'border-[#5c4a21]' },
         blue: { text: 'text-[#2a4d8a]', border: 'border-[#2a4d8a]' },

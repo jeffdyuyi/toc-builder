@@ -1,11 +1,13 @@
+import { pool, level, updateAbility } from '../data/character';
+import type { Character, CharacterSetter } from '../data/character';
 import { useState } from 'react';
 import DualPage, { GoldCard } from './DualPage';
-import { ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS, OCCUPATION_DESC, RULES_NOTES } from '../data/constants';
+import { ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS, OCCUPATION_DESC, RULES_NOTES, INVESTIGATION_SKILLS, NON_CLASS_ELIGIBLE } from '../data/constants';
 import { SKILL_DESCRIPTIONS } from '../data/skillDescriptions';
 
 interface SkillsPageProps {
-    data: any;
-    setData: (fn: (prev: any) => any) => void;
+    data: Character;
+    setData: CharacterSetter;
     toggleClassSkill: (skill: string) => void;
     canRoll?: boolean;
 }
@@ -18,10 +20,8 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
     const [isRolling, setIsRolling] = useState(false);
 
     const handleSkill = (skillName: string, value: string) => {
-        setData((prev: any) => ({
-            ...prev,
-            skills: { ...prev.skills, [skillName]: value }
-        }));
+        if (!/^\d*$/.test(value)) return;
+        setData(prev => updateAbility(prev, skillName, Number(value), canRoll));
     };
 
     const getSkillLabel = (name: string) => {
@@ -32,17 +32,18 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
         return name;
     };
 
-    const currentSkillValue = selectedSkill ? (parseInt(data.skills[selectedSkill] || '0') || 0) : 0;
+    const currentSkillValue = selectedSkill ? (canRoll ? pool(data, selectedSkill) : level(data, selectedSkill)) : 0;
 
     const handleRoll = () => {
-        if (!selectedSkill || !canRoll) return;
+        if (!selectedSkill || !canRoll || isRolling || INVESTIGATION_SKILLS.includes(selectedSkill)) return;
+        const spend = Math.min(Math.max(0, currentSkillValue), spentPoints);
         setIsRolling(true);
         setDiceResult(null);
-        setLastSpentPoints(spentPoints);
+        setLastSpentPoints(spend);
 
         // Spend points immediately
-        if (spentPoints > 0) {
-            handleSkill(selectedSkill, Math.max(0, currentSkillValue - spentPoints).toString());
+        if (spend > 0) {
+            handleSkill(selectedSkill, Math.max(0, currentSkillValue - spend).toString());
         }
 
         // Simulate dice roll animation
@@ -76,7 +77,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
         return (
             <span
                 className={`cursor-pointer transition-colors hover:text-[#b54a22] flex items-center gap-[2px] ${isClassSkill ? 'font-bold text-[#b54a22]' : 'text-[#5c4a21]'}`}
-                onClick={() => toggleClassSkill(name)}
+                onClick={() => !canRoll && !NON_CLASS_ELIGIBLE.includes(name) && toggleClassSkill(name)}
                 title="点击标记为本职能力"
             >
                 {isClassSkill && <span className="text-[10px] pointer-events-none">✦</span>}
@@ -95,6 +96,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                     >
                         <button
                             className={`w-4 h-4 flex items-center justify-center rounded shrink-0 mr-0.5 opacity-40 hover:opacity-100 hover:bg-[#daaa39] hover:text-white transition-all text-xs ${selectedSkill === skill ? 'opacity-100 text-[#b54a22]' : 'text-[#daaa39]'}`}
+                            disabled={isRolling}
                             onClick={() => {
                                 setSelectedSkill(skill);
                                 setDiceResult(null);
@@ -108,7 +110,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                             {renderSkillName(skill)}
                         </span>
                         <input
-                            value={data.skills[skill] || ''}
+                            type="number" min={0} max={99} disabled={isRolling} value={(canRoll ? pool : level)(data, skill)}
                             onChange={e => handleSkill(skill, e.target.value)}
                             className="w-8 shrink-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[1px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all ml-1"
                         />
@@ -161,15 +163,17 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                                 <h2 className="text-2xl font-black text-[#5c4a21] tracking-widest font-['STKaiti']">{getSkillLabel(selectedSkill)}</h2>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-3">
-                                        <span className="text-[#5c4a21] font-bold text-sm">当前点数:</span>
+                                        <span className="text-[#5c4a21] font-bold text-sm">{canRoll ? `当前池 / 等级 ${level(data, selectedSkill)}:` : '能力等级:'}</span>
                                         <div className="flex items-center bg-[#f8f4e6] border border-[#daaa39] rounded px-1">
                                             <button
                                                 className="px-2 text-lg text-[#b54a22] hover:bg-[#e5cd8d] rounded"
+                                                disabled={isRolling}
                                                 onClick={() => handleSkill(selectedSkill, Math.max(0, currentSkillValue - 1).toString())}
                                             >-</button>
                                             <span className="w-8 text-center font-bold text-slate-800">{currentSkillValue}</span>
                                             <button
                                                 className="px-2 text-lg text-[#b54a22] hover:bg-[#e5cd8d] rounded"
+                                                disabled={isRolling}
                                                 onClick={() => handleSkill(selectedSkill, (currentSkillValue + 1).toString())}
                                             >+</button>
                                         </div>
@@ -201,9 +205,9 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                                                 setDiceResult(null); // Clear previous result when changing points
                                             }}
                                             className="bg-white border border-[#daaa39] outline-none rounded p-1 text-sm font-bold text-slate-800 w-16 text-center cursor-pointer disabled:bg-stone-100 disabled:text-stone-400"
-                                            disabled={!canRoll || isRolling}
+                                            disabled={!canRoll || isRolling || INVESTIGATION_SKILLS.includes(selectedSkill)}
                                         >
-                                            {Array.from({ length: currentSkillValue + 1 }, (_, i) => (
+                                            {Array.from({ length: Math.max(0, currentSkillValue) + 1 }, (_, i) => (
                                                 <option key={i} value={i}>{i}</option>
                                             ))}
                                         </select>
@@ -212,7 +216,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                                     <div className="flex flex-col items-end">
                                         <button
                                             onClick={handleRoll}
-                                            disabled={isRolling || !canRoll}
+                                            disabled={isRolling || !canRoll || INVESTIGATION_SKILLS.includes(selectedSkill)}
                                             className="bg-[#cca74b] hover:bg-[#b54a22] text-[#1e1c18] hover:text-white px-6 py-2 rounded font-black tracking-widest transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                             title={!canRoll ? "车卡分配未完成，无法进行检定" : ""}
                                         >
@@ -247,7 +251,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                                         </>
                                     ) : (
                                         <div className="text-stone-400 text-sm font-bold italic w-full text-center">
-                                            选择消耗点数并投掷 D6，基础成功难度为 4。
+                                            {INVESTIGATION_SKILLS.includes(selectedSkill) ? '调查能力不掷骰；使用上方减号记录消耗。' : '选择消耗点数并投掷 D6，基础成功难度为 4。'}
                                         </div>
                                     )}
                                 </div>

@@ -1,3 +1,4 @@
+import type { Character, CharacterSetter } from '../data/character';
 import { useRef, useEffect, useState } from 'react';
 import DualPage, { GoldCard } from './DualPage';
 import { Bold, Italic, Plus, X } from 'lucide-react';
@@ -13,8 +14,23 @@ interface EquipmentItem {
 }
 
 interface MemoPageProps {
-    data: any;
-    setData: (fn: (prev: any) => any) => void;
+    data: Character;
+    setData: CharacterSetter;
+}
+
+function cleanMemo(html: string): string {
+    const source = new DOMParser().parseFromString(html, 'text/html');
+    const target = document.createElement('div');
+    const allowed = new Set(['B', 'STRONG', 'I', 'EM', 'BR', 'P', 'DIV', 'UL', 'OL', 'LI', 'SPAN']);
+    const copy = (node: Node, parent: Node) => {
+        if (node.nodeType === Node.TEXT_NODE) { parent.appendChild(document.createTextNode(node.textContent || '')); return; }
+        if (!(node instanceof Element) || ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT'].includes(node.tagName)) return;
+        const element = allowed.has(node.tagName) ? document.createElement(node.tagName.toLowerCase()) : document.createElement('span');
+        parent.appendChild(element);
+        node.childNodes.forEach(child => copy(child, element));
+    };
+    source.body.childNodes.forEach(node => copy(node, target));
+    return target.innerHTML;
 }
 
 const tableInputCls = "w-full bg-transparent outline-none text-slate-800 px-1 font-medium text-[13px] text-center focus:bg-[#f6f1d3]/80 transition-all font-serif h-full focus:shadow-inner";
@@ -28,7 +44,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
     const equipmentItems: EquipmentItem[] = data.equipmentItems || [];
 
     const updateItem = (index: number, field: keyof EquipmentItem, value: string) => {
-        setData((prev: any) => {
+        setData((prev: Character) => {
             const newItems = [...(prev.equipmentItems || [])];
             newItems[index] = { ...newItems[index], [field]: value };
             return { ...prev, equipmentItems: newItems };
@@ -36,7 +52,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
     };
 
     const addItem = (preset?: { name: string, price: string, note1?: string, note2?: string }) => {
-        setData((prev: any) => ({
+        setData((prev: Character) => ({
             ...prev,
             equipmentItems: [...(prev.equipmentItems || []), {
                 id: Math.random().toString(36).slice(2, 11),
@@ -50,7 +66,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
     };
 
     const removeItem = (index: number) => {
-        setData((prev: any) => {
+        setData((prev: Character) => {
             const newItems = [...(prev.equipmentItems || [])];
             newItems.splice(index, 1);
             return { ...prev, equipmentItems: newItems };
@@ -61,15 +77,15 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
     useEffect(() => {
         if (memoRef.current && data.campaignMemo !== memoRef.current.innerHTML) {
             // Only set if content completely changed (like load), to avoid cursor jumps when typing
-            if (!memoRef.current.innerHTML && data.campaignMemo) {
-                memoRef.current.innerHTML = data.campaignMemo;
+            if (document.activeElement !== memoRef.current) {
+                memoRef.current.innerHTML = cleanMemo(data.campaignMemo);
             }
         }
     }, [data.campaignMemo]);
 
     const handleMemoInput = () => {
         if (memoRef.current) {
-            setData((prev: any) => ({ ...prev, campaignMemo: memoRef.current?.innerHTML || '' }));
+            setData((prev: Character) => ({ ...prev, campaignMemo: memoRef.current?.innerHTML || '' }));
         }
     };
 
@@ -125,11 +141,11 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                                                         ✕
                                                     </button>
                                                 </td>
-                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.qty} onChange={e => updateItem(i, 'qty', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.note1} onChange={e => updateItem(i, 'note1', e.target.value)} /></td>
-                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as any} rows={1} value={item.note2} onChange={e => updateItem(i, 'note2', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as React.CSSProperties} rows={1} value={item.name} onChange={e => updateItem(i, 'name', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as React.CSSProperties} rows={1} value={item.qty} onChange={e => updateItem(i, 'qty', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as React.CSSProperties} rows={1} value={item.price} onChange={e => updateItem(i, 'price', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as React.CSSProperties} rows={1} value={item.note1} onChange={e => updateItem(i, 'note1', e.target.value)} /></td>
+                                                <td className="border border-[#daaa39] p-0 h-full"><textarea className={`${tableInputCls} resize-none overflow-y-hidden py-1.5`} style={{ fieldSizing: "content", minHeight: "32px", height: "100%" } as React.CSSProperties} rows={1} value={item.note2} onChange={e => updateItem(i, 'note2', e.target.value)} /></td>
                                             </tr>
                                         ))
                                     )}

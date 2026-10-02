@@ -1,3 +1,5 @@
+import { pool, level, updateAbility } from '../data/character';
+import type { Character, CharacterSetter } from '../data/character';
 import { useState } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 import DualPage, { GoldCard } from './DualPage';
@@ -5,8 +7,9 @@ import { OCCUPATIONS, OCCUPATION_DESC, DRIVES, PILLARS, RULES_NOTES } from '../d
 import { SKILL_DESCRIPTIONS } from '../data/skillDescriptions';
 
 interface InfoPageProps {
-    data: any;
-    setData: (fn: (prev: any) => any) => void;
+    data: Character;
+    setData: CharacterSetter;
+    isCompleted?: boolean;
     showOccupations: boolean;
     setShowOccupations: (v: boolean) => void;
     showDrives: boolean;
@@ -23,7 +26,7 @@ const getRuleNote = (key: string) => {
 const inputCls = "w-full bg-transparent border-b border-[#daaa39] outline-none text-slate-800 px-1 font-medium pb-[2px] text-sm focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all";
 const labelCls = "text-[#5c4a21] font-bold w-[72px] tracking-widest leading-none shrink-0 text-[14px]";
 
-export default function InfoPage({ data, setData, showOccupations, setShowOccupations, showDrives, setShowDrives, showPillars, setShowPillars }: InfoPageProps) {
+export default function InfoPage({ data, setData, showOccupations, setShowOccupations, showDrives, setShowDrives, showPillars, setShowPillars, isCompleted = false }: InfoPageProps) {
     const [infoModal, setInfoModal] = useState<{ title: string, content: string } | null>(null);
 
     const openInfo = (title: string) => {
@@ -35,7 +38,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setData((prev: any) => {
+        setData((prev: Character) => {
             const next = { ...prev, [name]: value };
             if (name === 'occupation' && OCCUPATION_DESC[value]) {
                 next.customClassSkills = [...OCCUPATION_DESC[value].skills];
@@ -48,7 +51,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => setData((prev: any) => ({ ...prev, avatar: reader.result }));
+            reader.onloadend = () => setData((prev: Character) => ({ ...prev, avatar: typeof reader.result === 'string' ? reader.result : '' }));
             reader.readAsDataURL(file);
         }
     };
@@ -57,7 +60,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
         const cells = [];
         for (let i = min; i <= max; i++) {
             cells.push(
-                <div key={i} onClick={() => setData((prev: any) => ({ ...prev, [field]: i }))}
+                <div key={i} onClick={() => setData(prev => updateAbility(prev, ({ sanity: '心智(9)', stability: '坚毅(9)', health: '健康(9)' } as Record<string, string>)[field], i, isCompleted))}
                     className={`border-r border-b border-[#cca74b] flex-1 flex items-center justify-center p-[1px] min-w-[17px] cursor-pointer text-[13px] h-[28px] transition-colors ${current === i ? 'bg-[#c89b3c] text-white font-bold' : 'hover:bg-[#f6f1d3]'}`}
                 >{i}</div>
             );
@@ -78,7 +81,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
 
     const renderDropdown = (fieldName: string, isOpen: boolean, setOpen: (v: boolean) => void, items: { key: string; label: string; onSelect: () => void }[]) => (
         <div className="flex-1 min-w-0 relative">
-            <input type="text" name={fieldName} value={data[fieldName]} onChange={handleInput}
+            <input type="text" name={fieldName} value={String(data[fieldName as keyof Character] ?? '')} onChange={handleInput}
                 onClick={() => setOpen(!isOpen)}
                 onBlur={() => setTimeout(() => setOpen(false), 200)}
                 placeholder="点击选择或输入"
@@ -138,7 +141,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                     <div className="flex text-[14px] items-center">
                                         <span className={labelCls}>动 力：</span>
                                         {renderDropdown('drive', showDrives, setShowDrives,
-                                            DRIVES.map(d => ({ key: d.name, label: d.name, onSelect: () => setData((p: any) => ({ ...p, drive: d.name })) }))
+                                            DRIVES.map(d => ({ key: d.name, label: d.name, onSelect: () => setData((p: Character) => ({ ...p, drive: d.name })) }))
                                         )}
                                     </div>
                                     <div className="flex text-[14px] items-center">
@@ -148,7 +151,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                                 key: occ, label: occ,
                                                 onSelect: () => {
                                                     const v = occ === "自定义..." ? "" : occ;
-                                                    setData((p: any) => ({ ...p, occupation: v, customClassSkills: OCCUPATION_DESC[v] ? [...OCCUPATION_DESC[v].skills] : [] }));
+                                                    setData((p: Character) => ({ ...p, occupation: v, customClassSkills: OCCUPATION_DESC[v] ? [...OCCUPATION_DESC[v].skills] : [] }));
                                                 }
                                             }))
                                         )}
@@ -156,7 +159,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                     <div className="flex text-[14px] items-center">
                                         <span className={labelCls + ' cursor-pointer hover:text-[#8b6d2a] transition-colors'} onClick={() => openInfo('心智支柱')}>支 柱：</span>
                                         {renderDropdown('pillar', showPillars, setShowPillars,
-                                            PILLARS.map(p => ({ key: p, label: p, onSelect: () => setData((prev: any) => ({ ...prev, pillar: p })) }))
+                                            PILLARS.map(p => ({ key: p, label: p, onSelect: () => setData((prev: Character) => ({ ...prev, pillar: p })) }))
                                         )}
                                     </div>
                                     <div className="flex text-[14px] items-center">
@@ -189,7 +192,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                 ].map(f => (
                                     <div key={f.name} className="text-[13px]">
                                         <span className="text-[#5c4a21] font-bold">{f.label}：</span>
-                                        <textarea name={f.name} value={data[f.name] || ''} onChange={handleInput}
+                                        <textarea name={f.name} value={String(data[f.name as keyof Character] ?? '')} onChange={handleInput}
                                             className="w-full bg-transparent border border-[#daaa39]/50 rounded outline-none text-slate-800 p-1.5 resize-none text-[13px] leading-snug focus:bg-[#f6f1d3]/80 focus:border-[#8b6d2a] transition-all font-serif mt-1"
                                             rows={f.rows} placeholder={f.placeholder}
                                         />
@@ -203,9 +206,9 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                     <>
                         {/* Stats — placed at top */}
                         <GoldCard className="p-3 py-4 flex flex-col gap-4">
-                            {renderStatGrid('心智', 0, 15, data.sanity, 'sanity', '1')}
-                            {renderStatGrid('坚毅', -12, 15, data.stability, 'stability')}
-                            {renderStatGrid('健康', -12, 15, data.health, 'health')}
+                            {renderStatGrid('心智', 0, 15, (isCompleted ? pool : level)(data, '心智(9)'), 'sanity', '1')}
+                            {renderStatGrid('坚毅', -12, 15, (isCompleted ? pool : level)(data, '坚毅(9)'), 'stability')}
+                            {renderStatGrid('健康', -12, 15, (isCompleted ? pool : level)(data, '健康(9)'), 'health')}
                         </GoldCard>
 
                         {/* Source of Stability + Contacts — placed second */}

@@ -1,73 +1,36 @@
-# React + TypeScript + Vite
+# 克苏鲁迷踪车卡器
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite 的本地建卡与跑团工具。
 
-Currently, two official plugins are available:
+## 启动与验证
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+在 toc-builder 目录执行：
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm install
+npm run dev
+npm test
+npm run lint
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 使用
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. 填写角色资料，选择职业、规则和人数，分配能力等级。点数提示会计算本职折扣并检查超支与核心状态上限。
+2. 本地保存。点数合规时进入跑团模式；存在警告时，可选择继续完成或保存草稿。
+3. 跑团时能力页数字表示当前池，详情同时显示能力等级。一般能力可掷 D6 并消耗点数；调查能力直接记录消耗，不掷骰。
+4. 使用加减号恢复或扣减单项能力池。健康与坚毅允许在基础页降至负数；恢复能力池按钮会将所有池恢复至等级，请按团内规则决定是否使用。
+5. 编辑等级可返回建卡并重置当前池。建议先保存或导出备份。
+6. JSON 备份包含全部角色数据、能力池、规则配置和建卡状态，可导入恢复。MD 包含角色资料、装备与备忘录；图按钮生成三页完整长图预览，再点击下载 PNG。
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 存档兼容与限制
+
+- 浏览器本地保存属于当前浏览器与站点地址，建议定期下载 JSON。
+- 兼容旧版存档。旧版没有保存的规则配置使用默认值；旧版跑团时已扣减的原始能力等级无法推算，须按原卡核对并通过编辑等级修正。
+- 同名角色沿用原有覆盖保存方式。
+- 本工具提供规则提示，仍允许主持人确认后采用自定义点数与规则例外。
+- 规则资料尚未完成逐条对照原书校对。
+
+## 已验证
+
+自动检查覆盖核心状态同步、等级与池分离、消耗与恢复、数字边界、旧数据迁移及 JSON 数据往返；另做浏览器建卡与检定交互检查。

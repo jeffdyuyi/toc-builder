@@ -1,12 +1,13 @@
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { normalizeCharacter, level } from './data/character';
+import type { Character } from './data/character';
+import { useRef, useState, useMemo } from 'react';
 import { FileText, Image as ImageIcon, Save, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import {
   ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS,
   OCCUPATION_DESC,
   VARIANT_RULES, INVESTIGATION_SKILLS, parseCreditRange,
-  FREE_SANITY, FREE_STABILITY, FREE_HEALTH
+  FREE_SANITY, FREE_STABILITY, FREE_HEALTH, NON_CLASS_ELIGIBLE
 } from './data/constants';
 import InfoPage from './components/InfoPage';
 import SkillsPage from './components/SkillsPage';
@@ -15,6 +16,8 @@ import RulesPage from './components/RulesPage';
 
 function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const [showSaved, setShowSaved] = useState(false);
+  const [exportImage, setExportImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'skills' | 'memo' | 'guide_rules'>('info');
   const [showOccupations, setShowOccupations] = useState(false);
   const [showDrives, setShowDrives] = useState(false);
@@ -31,7 +34,7 @@ function App() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [frozenStats, setFrozenStats] = useState({ invUsed: 0, genUsed: 0 });
 
-  const [data, setData] = useState<any>({
+  const [data, setData] = useState<Character>({
     player: '',
     name: '',
     avatar: '',
@@ -58,7 +61,8 @@ function App() {
   });
 
   const toggleClassSkill = (skill: string) => {
-    setData((prev: any) => {
+    if (isCompleted || NON_CLASS_ELIGIBLE.includes(skill)) return;
+    setData((prev: Character) => {
       let curr = prev.customClassSkills;
       if (curr === undefined || curr === null) {
         curr = prev.occupation && OCCUPATION_DESC[prev.occupation] ? [...OCCUPATION_DESC[prev.occupation].skills] : [];
@@ -92,7 +96,7 @@ function App() {
     const allSkills = [...ACADEMIC_SKILLS, ...SOCIAL_SKILLS, ...TECH_SKILLS, ...GENERAL_SKILLS];
 
     for (const skill of allSkills) {
-      const rawLevel = parseInt(data.skills[skill] || '0') || 0;
+      const rawLevel = level(data, skill);
       if (rawLevel === 0) continue;
 
       const isInvestigation = INVESTIGATION_SKILLS.includes(skill);
@@ -138,19 +142,9 @@ function App() {
       }
     }
 
-    // Also count stat grid values for sanity/stability/health if not in skills
-    if (!data.skills['心智(9)']) {
-      genUsed += Math.max(0, (data.sanity || 0) - FREE_SANITY);
-      generalLevels.push({ name: '心智', level: data.sanity || 0 });
-    }
-    if (!data.skills['坚毅(9)']) {
-      genUsed += Math.max(0, (data.stability || 0) - FREE_STABILITY);
-      generalLevels.push({ name: '坚毅', level: data.stability || 0 });
-    }
-    if (!data.skills['健康(9)']) {
-      genUsed += Math.max(0, (data.health || 0) - FREE_HEALTH);
-      generalLevels.push({ name: '健康', level: data.health || 0 });
-    }
+    if (occData && level(data, '信誉等级') < creditMin) warnings.push(`信誉等级不得低于职业最低值 ${creditMin}`);
+    if (!isCompleted && level(data, '克苏鲁神话(4)') > 0) warnings.push('创建时购买克苏鲁神话需要主持人许可');
+    if (!isCompleted && level(data, '催眠(8)') > 0 && (variant.name !== '通俗风格' || !['精神病学家', '灵异现象研究者'].includes(data.occupation))) warnings.push('催眠仅限通俗风格的精神病学家或灵异现象研究者');
 
     // Validation
     if (invUsed > invPointsTotal) warnings.push(`调查能力点数超支 ${invUsed - invPointsTotal} 点`);
@@ -159,7 +153,7 @@ function App() {
     // Second-highest general ability must be >= half of highest
     generalLevels.sort((a, b) => b.level - a.level);
     if (generalLevels.length >= 2 && generalLevels[0].level > 0) {
-      const half = Math.floor(generalLevels[0].level / 2);
+      const half = Math.ceil(generalLevels[0].level / 2);
       if (generalLevels[1].level < half) {
         warnings.push(`一般能力第二高(${generalLevels[1].name}:${generalLevels[1].level})不得低于最高(${generalLevels[0].name}:${generalLevels[0].level})的一半(${half})`);
       }
@@ -168,12 +162,12 @@ function App() {
     // Sanity cap
     const cthulhuLevel = parseInt(data.skills['克苏鲁神话(4)'] || '0') || 0;
     const sanityCap = Math.min(10, 10 - cthulhuLevel);
-    const currentSanity = parseInt(data.skills['心智(9)'] || '0') || data.sanity || 0;
+    const currentSanity = level(data, '心智(9)');
     if (currentSanity > sanityCap) warnings.push(`心智(${currentSanity})超过上限(${sanityCap})`);
 
     // Health/Stability cap
-    const currentHealth = parseInt(data.skills['健康(9)'] || '0') || data.health || 0;
-    const currentStability = parseInt(data.skills['坚毅(9)'] || '0') || data.stability || 0;
+    const currentHealth = level(data, '健康(9)');
+    const currentStability = level(data, '坚毅(9)');
     if (currentHealth > 12) warnings.push(`健康(${currentHealth})超过上限(12)`);
     if (currentStability > 12) warnings.push(`坚毅(${currentStability})超过上限(12)`);
 
@@ -183,83 +177,76 @@ function App() {
     }
 
     return { invUsed, genUsed, warnings };
-  }, [data, invPointsTotal, genPointsTotal, isCompleted, frozenStats]);
+  }, [data, invPointsTotal, genPointsTotal, isCompleted, frozenStats, variant.name]);
 
   // === Save/Load functionality ===
-  const [savedCharacters, setSavedCharacters] = useState<string[]>([]);
+  const [savedCharacters, setSavedCharacters] = useState<string[]>(() => { try { return Object.keys(localStorage).filter(k => k.startsWith('toc_char_')).map(k => k.slice(9)); } catch { return []; } });
+  const settings = { variantIdx, playerCount, customInvPoints, customGenPoints };
 
-  useEffect(() => {
-    // Load list of saved chars on mount
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('toc_char_'));
-    setSavedCharacters(keys.map(k => k.replace('toc_char_', '')));
-  }, []);
-
-  const saveCharacter = () => {
-    if (!data.name) {
-      alert("请至少填写调查员姓名再保存！");
-      return;
+  const saveCharacterUnsafe = () => {
+    if (!data.name.trim()) { alert('请至少填写调查员姓名再保存！'); return; }
+    let completed = isCompleted;
+    if (!completed) {
+      const valid = pointStats.invUsed === invPointsTotal && pointStats.genUsed === genPointsTotal && pointStats.warnings.length === 0;
+      completed = valid || confirm('点数尚未完整分配或存在规则警告。仍然完成建卡并进入跑团吗？\n取消将保存草稿。');
     }
-
-    // If not completed, prompt warning
-    if (!isCompleted) {
-      // Live recalculate to check exact completeness
-      const cStats = pointStats; // already memoized
-      if (cStats.invUsed !== invPointsTotal || cStats.genUsed !== genPointsTotal || cStats.warnings.length > 0) {
-        const confirmComplete = confirm("当前能力点数尚未完全分配完毕（或已透支），或存在警告。\\n是否仍然确定车卡完成（进入游戏阶段，且检定能力将会解锁）？\\n\\n点击“取消”将以未完成草稿状态保存。");
-        if (confirmComplete) {
-          setIsCompleted(true);
-          setFrozenStats({ invUsed: cStats.invUsed, genUsed: cStats.genUsed });
-          // Data will save with the new states on next render, but we can bundle it manually now:
-          const savePayload = { data, isCompleted: true, frozenStats: { invUsed: cStats.invUsed, genUsed: cStats.genUsed } };
-          localStorage.setItem(`toc_char_${data.name}`, JSON.stringify(savePayload));
-          setSavedCharacters(prev => Array.from(new Set([...prev, data.name])));
-          alert("已确认为游戏阶段并保存本地！");
-          return;
-        }
-      } else {
-        // Exactly matched points
-        setIsCompleted(true);
-        setFrozenStats({ invUsed: cStats.invUsed, genUsed: cStats.genUsed });
-        const savePayload = { data, isCompleted: true, frozenStats: { invUsed: cStats.invUsed, genUsed: cStats.genUsed } };
-        localStorage.setItem(`toc_char_${data.name}`, JSON.stringify(savePayload));
-        setSavedCharacters(prev => Array.from(new Set([...prev, data.name])));
-        alert("建卡完成！能力检定已解锁，配点栏已锁定，存档已保存在本地。");
-        return;
-      }
-    }
-
-    // Save as draft or regular update
-    const payload = { data, isCompleted, frozenStats };
-    localStorage.setItem(`toc_char_${data.name}`, JSON.stringify(payload));
+    const frozen = completed && !isCompleted ? { invUsed: pointStats.invUsed, genUsed: pointStats.genUsed } : frozenStats;
+    const normalized = normalizeCharacter(data);
+    localStorage.setItem(`toc_char_${data.name}`, JSON.stringify({ version: 2, settings, data: normalized, isCompleted: completed, frozenStats: frozen }));
+    setData(normalized);
+    setIsCompleted(completed);
+    setFrozenStats(frozen);
     setSavedCharacters(prev => Array.from(new Set([...prev, data.name])));
-    alert(isCompleted ? "角色进度保存成功（本地）。" : "角色草稿保存成功（本地）。在点数完美分配完毕前，将无法使用投掷检定工具。");
+    alert(completed ? '角色已保存，跑团模式已开启。' : '角色草稿已保存。');
   };
 
+  const saveCharacter = () => {
+    try { saveCharacterUnsafe(); }
+    catch { alert('保存失败：浏览器存储空间不足或不可用，请导出 JSON 备份。'); }
+  };
+  const exportJSON = () => saveAs(new Blob([JSON.stringify({ version: 2, settings, data, isCompleted, frozenStats }, null, 2)], { type: 'application/json' }), `TOC角色卡_${data.name || '未命名'}.json`);
+
+  const applySave = (raw: string) => {
+    const parsed = JSON.parse(raw);
+    if (!parsed.data || !parsed.data.skills || typeof parsed.data.name !== 'string' || !Array.isArray(parsed.data.equipmentItems ?? [])) throw new Error('存档格式无效');
+    const restored = normalizeCharacter(parsed.data);
+    setData(restored);
+    setVariantIdx(Math.max(0, Math.min(VARIANT_RULES.length - 1, Math.trunc(Number(parsed.settings?.variantIdx) || 0))));
+    setPlayerCount(Math.max(1, Math.min(10, Math.trunc(Number(parsed.settings?.playerCount) || 4))));
+    setCustomInvPoints(parsed.settings?.customInvPoints == null ? null : Math.max(0, Math.trunc(Number(parsed.settings.customInvPoints) || 0)));
+    setCustomGenPoints(parsed.settings?.customGenPoints == null ? null : Math.max(0, Math.trunc(Number(parsed.settings.customGenPoints) || 0)));
+    setIsCompleted(parsed.isCompleted === true);
+    setFrozenStats({ invUsed: Number(parsed.frozenStats?.invUsed) || 0, genUsed: Number(parsed.frozenStats?.genUsed) || 0 });
+    alert('读取成功！旧存档若已消耗能力，请核对原始能力等级。');
+  };
   const loadCharacter = (charName: string) => {
-    const raw = localStorage.getItem(`toc_char_${charName}`);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed.data) {
-          setData(parsed.data);
-          setIsCompleted(parsed.isCompleted || false);
-          setFrozenStats(parsed.frozenStats || { invUsed: 0, genUsed: 0 });
-          alert("读取成功！");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("读取失败：存档损坏。");
-      }
-    }
+    try { const raw = localStorage.getItem(`toc_char_${charName}`); if (raw) applySave(raw); }
+    catch { alert('读取失败：存档格式无效或浏览器存储不可用。'); }
   };
 
 
   const exportPNG = async () => {
     if (!sheetRef.current) return;
-    const canvas = await html2canvas(sheetRef.current, { scale: 2, useCORS: true });
-    canvas.toBlob((blob) => {
-      if (blob) saveAs(blob, `TOC角色卡_${data.name || '未命名'}.png`);
-    });
+    try {
+    const { default: html2canvas } = await import('html2canvas');
+    const canvas = await html2canvas(sheetRef.current, { scale: 2, useCORS: true, onclone: clone => {
+      const pixel = clone.createElement('canvas'); pixel.width = pixel.height = 1;
+      const ctx = pixel.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+      const compatibleColor = (value: string) => value.replace(/(?:oklch|oklab|color|lab|lch)\([^)]*\)/g, color => {
+        ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+        return `rgba(${r},${g},${b},${a / 255})`;
+      });
+      clone.querySelectorAll<HTMLElement>('*').forEach(element => {
+        const computed = clone.defaultView!.getComputedStyle(element);
+        for (const property of ['color', 'background-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'outline-color', 'text-decoration-color', 'box-shadow', 'text-shadow', 'background-image']) {
+          element.style.setProperty(property, compatibleColor(computed.getPropertyValue(property)), 'important');
+        }
+      });
+    } });
+    setExportImage(canvas.toDataURL('image/png'));
+    } catch { alert('图片导出失败，请重试或使用 MD / JSON 备份。'); }
   };
 
   const exportMD = () => {
@@ -279,7 +266,7 @@ function App() {
 
 ## 技能
 ${Object.entries(data.skills)
-        .filter(([_, v]) => v !== '')
+        .filter(([, v]) => Number(v) > 0)
         .map(([k, v]) => `- **${k}:** ${v}`)
         .join('\n')}
 
@@ -288,6 +275,26 @@ ${data.sourceOfStability}
 
 ## 联系人
 ${data.notes}
+
+## 外貌与背景
+- 性别：${data.gender}；年龄：${data.age}
+- 外貌：${data.appearance}
+- 特征：${data.distinguishing}
+- 性格：${data.personality}
+${data.backstory}
+
+## 装备
+${data.equipmentItems.map(item => `- ${item.name} × ${item.qty}；价格：${item.price}；${item.note1} ${item.note2}`).join('\n')}
+
+## 战役备忘录
+${new DOMParser().parseFromString(data.campaignMemo, 'text/html').body.textContent || ''}
+
+## 当前能力池
+${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}`).join('\n')}
+
+## 建卡配置
+- 规则：${variant.name}；人数：${playerCount}
+- 调查点数：${invPointsTotal}；一般点数：${genPointsTotal}
 `;
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     saveAs(blob, `TOC角色卡_${data.name || '未命名'}.md`);
@@ -296,10 +303,10 @@ ${data.notes}
   return (
     <div className="min-h-screen bg-[#1e1c18] font-sans text-stone-100 selection:bg-[#cca74b] selection:text-white">
       {/* 悬浮顶栏 / Sticky Header (提高了操作便捷性) */}
-      <header className="sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center bg-[#1e1c18]/90 backdrop-blur-md shadow-lg px-6 py-4 border-b border-stone-800 mb-8 w-full">
-        <div className="flex-1 flex justify-center md:justify-start">
+      <header className="relative xl:sticky top-0 z-50 flex flex-col xl:flex-row flex-wrap gap-3 justify-between items-center bg-[#1e1c18]/90 backdrop-blur-md shadow-lg px-6 py-4 border-b border-stone-800 mb-8 w-full">
+        <div className="shrink-0 flex justify-center xl:justify-start">
           <h1
-            className="text-xl md:text-2xl leading-none font-black text-[#cca74b] tracking-[0.2em] ml-[0.2em] cursor-pointer hover:brightness-125 transition-all"
+            className="whitespace-nowrap text-xl md:text-2xl leading-none font-black text-[#cca74b] tracking-[0.2em] ml-[0.2em] cursor-pointer hover:brightness-125 transition-all"
             style={{ fontFamily: '"STKaiti", "KaiTi", serif', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
             onClick={() => setShowAbout(true)}
             title="点击查看作者信息与免责声明"
@@ -309,7 +316,7 @@ ${data.notes}
         </div>
 
         {/* 现代优雅的活页切换卡 / Sleek Tabs */}
-        <div className="flex flex-wrap bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-4 border border-stone-700/50">
+        <div className="shrink-0 flex flex-wrap bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-4 border border-stone-700/50">
           <button
             onClick={() => setActiveTab('info')}
             className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'info' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
@@ -355,6 +362,7 @@ ${data.notes}
           <div className="flex items-center gap-1 text-xs">
             <span className="text-stone-500 font-bold">人数</span>
             <input
+              disabled={isCompleted}
               type="number"
               min={1}
               max={10}
@@ -372,12 +380,13 @@ ${data.notes}
             </span>
             <span className="text-stone-600">/</span>
             <input
+              disabled={isCompleted}
               type="number"
               min={0}
               value={customInvPoints ?? invPointsTotal}
               onChange={e => {
                 const v = parseInt(e.target.value);
-                setCustomInvPoints(isNaN(v) ? null : v);
+                setCustomInvPoints(isNaN(v) ? null : Math.max(0, v));
               }}
               className="w-10 bg-[#2c2923] border border-stone-700 text-stone-200 text-center text-xs font-bold rounded px-1 py-1 outline-none focus:border-[#cca74b] transition-all"
               title="调查能力创建点数（可自定义）"
@@ -392,12 +401,13 @@ ${data.notes}
             </span>
             <span className="text-stone-600">/</span>
             <input
+              disabled={isCompleted}
               type="number"
               min={0}
               value={customGenPoints ?? genPointsTotal}
               onChange={e => {
                 const v = parseInt(e.target.value);
-                setCustomGenPoints(isNaN(v) ? null : v);
+                setCustomGenPoints(isNaN(v) ? null : Math.max(0, v));
               }}
               className="w-10 bg-[#2c2923] border border-stone-700 text-stone-200 text-center text-xs font-bold rounded px-1 py-1 outline-none focus:border-[#cca74b] transition-all"
               title="一般能力创建点数（可自定义）"
@@ -416,12 +426,12 @@ ${data.notes}
         </div>
 
         {/* 导出按钮操作区 / Action Buttons */}
-        <div className="flex gap-2 mt-4 md:mt-0 shrink-0">
+        <div className="flex flex-wrap justify-center gap-2 mt-4 md:mt-0 shrink-0">
           <div className="group relative">
-            <button className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
+            <button onClick={() => setShowSaved(value => !value)} aria-expanded={showSaved} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
               <Download size={14} /> 读取本地
             </button>
-            <div className="absolute right-0 top-full mt-1 bg-[#1e1c18] border border-[#cca74b] rounded-md shadow-lg py-2 min-w-[150px] z-50 hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className={`absolute right-0 top-full mt-1 bg-[#1e1c18] border border-[#cca74b] rounded-md shadow-lg py-2 min-w-[150px] z-50 ${showSaved ? 'block' : 'hidden'}`}>
               <div className="px-3 pb-1 mb-1 border-b border-stone-700 text-xs text-stone-400 font-bold">本地存卡记录</div>
               {savedCharacters.length === 0 ? (
                 <div className="px-3 py-1 text-xs text-stone-500 italic">暂无记录</div>
@@ -430,7 +440,7 @@ ${data.notes}
                   <div
                     key={char}
                     className="px-3 py-1.5 text-sm text-stone-200 hover:bg-[#cca74b] hover:text-stone-900 cursor-pointer transition-colors break-words max-w-[200px]"
-                    onClick={() => loadCharacter(char)}
+                    onClick={() => { loadCharacter(char); setShowSaved(false); }}
                   >
                     {char}
                   </div>
@@ -443,6 +453,10 @@ ${data.notes}
             {!isCompleted && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}
           </button>
 
+          <label className="px-3 py-2 border border-stone-700 rounded-md text-xs cursor-pointer">导入 JSON<input type="file" accept=".json,application/json" className="hidden" onChange={async e => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { applySave(await file.text()); } catch { alert('导入失败：存档格式无效。'); } }} /></label>
+          <button disabled={!isCompleted} onClick={() => { if (confirm('返回建卡修改能力等级？当前能力池将重置，请先保存或导出备份。')) { setIsCompleted(false); setData(prev => ({ ...prev, pools: {} })); } }} className="px-3 py-2 border border-stone-700 rounded-md text-xs disabled:opacity-50">编辑等级</button>
+          <button onClick={exportJSON} className="px-3 py-2 border border-stone-700 rounded-md text-xs" title="完整存档备份">JSON</button>
+          <button onClick={() => { if (confirm('恢复所有能力池至能力等级？')) setData(prev => ({ ...prev, pools: {} })); }} disabled={!isCompleted} className="px-3 py-2 border border-stone-700 rounded-md text-xs disabled:opacity-50">恢复能力池</button>
           <div className="w-[1px] h-8 bg-stone-700 mx-1"></div>
 
           <button onClick={exportPNG} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-blue-600 hover:text-white border border-stone-700 hover:border-blue-600 rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm" title="导出长图">
@@ -458,8 +472,7 @@ ${data.notes}
         {/* Sheet Container */}
         <div className="flex justify-center overflow-x-auto px-4 pb-8 relative">
           <div
-            ref={sheetRef}
-            className="w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
+                        className="w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
             style={{
               backgroundColor: '#faf8f2',
               backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
@@ -470,6 +483,7 @@ ${data.notes}
             {activeTab === 'info' && (
               <InfoPage
                 data={data}
+                isCompleted={isCompleted}
                 setData={setData}
                 showOccupations={showOccupations}
                 setShowOccupations={setShowOccupations}
@@ -482,6 +496,7 @@ ${data.notes}
 
             {activeTab === 'skills' && (
               <SkillsPage
+                key={data.name}
                 data={data}
                 setData={setData}
                 toggleClassSkill={toggleClassSkill}
@@ -500,6 +515,25 @@ ${data.notes}
           </div>
         </div>
       </div>
+
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-20000px', top: 0, width: 1100, pointerEvents: 'none' }}>
+        <div ref={sheetRef} style={{ background: '#faf8f2', padding: 32, color: '#1e1c18' }}>
+          <h1 className="text-2xl font-bold mb-6">克苏鲁迷踪角色卡 · {data.name}</h1>
+          <InfoPage data={data} setData={setData} isCompleted={isCompleted} showOccupations={false} setShowOccupations={() => {}} showDrives={false} setShowDrives={() => {}} showPillars={false} setShowPillars={() => {}} />
+          <SkillsPage data={data} setData={setData} toggleClassSkill={() => {}} canRoll={isCompleted} />
+          <MemoPage data={data} setData={setData} />
+        </div>
+      </div>
+
+      {exportImage && <div className="fixed inset-0 bg-black/80 z-[100] overflow-y-auto p-4">
+        <div className="max-w-4xl mx-auto bg-stone-900 rounded p-4">
+          <div className="flex justify-between gap-4 mb-4 sticky top-0 bg-stone-900 py-2">
+            <a href={exportImage} download={`TOC角色卡_${data.name || '未命名'}.png`} className="px-4 py-2 bg-[#cca74b] text-stone-900 rounded font-bold">下载完整角色卡 PNG</a>
+            <button onClick={() => setExportImage(null)} className="px-4 py-2 border rounded">关闭预览</button>
+          </div>
+          <img src={exportImage} alt="完整角色卡导出预览" className="w-full" />
+        </div>
+      </div>}
 
       {/* About / Disclaimer Modal */}
       {showAbout && (
