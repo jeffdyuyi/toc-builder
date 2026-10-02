@@ -73,27 +73,24 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
             isClassSkill = OCCUPATION_DESC[data.occupation].skills.includes(name);
         }
 
-        let content = name;
-        const matchNum = name.match(/^(.*?)\((\d+)\)$/);
-        if (matchNum) {
-            content = matchNum[1];
-        } else {
-            const matchStar = name.match(/^(.*?)\*$/);
-            if (matchStar) {
-                content = matchStar[1];
-            }
-        }
-
-        return (
-            <span
-                className={`cursor-pointer transition-colors hover:text-[#b54a22] flex items-center gap-[2px] ${isClassSkill ? 'font-bold text-[#b54a22]' : 'text-[#5c4a21]'}`}
-                onClick={() => !canRoll && !NON_CLASS_ELIGIBLE.includes(name) && toggleClassSkill(name)}
-                title="点击标记为本职能力"
-            >
-                {isClassSkill && <span className="text-[10px] pointer-events-none">✦</span>}
-                {content}
-            </span>
-        );
+        const label = getSkillLabel(name);
+        const canMark = !NON_CLASS_ELIGIBLE.includes(name);
+        return (<>
+            <button
+                className={`skill-name flex-1 min-w-0 text-left transition-colors hover:text-[#b54a22] ${isClassSkill ? 'font-bold text-[#b54a22]' : 'text-[#5c4a21]'}`}
+                disabled={isRolling}
+                onClick={() => { setSelectedSkill(name); setDiceResult(null); setSpentPoints(0); }}
+                aria-label={`查看${label}详情与检定`} title="查看能力说明与检定"
+            >{label}</button>
+            {canMark && (!canRoll || isClassSkill) && <button
+                className={`class-skill-toggle shrink-0 rounded border px-1 text-[10px] leading-5 ${isClassSkill ? 'border-[#b54a22] bg-[#b54a22]/10 text-[#b54a22]' : 'border-[#daaa39]/50 text-[#8b6d2a]'}`}
+                aria-label={`${isClassSkill ? '取消' : '标记'}${label}为本职能力`}
+                aria-pressed={isClassSkill}
+                disabled={canRoll || isRolling}
+                onClick={() => toggleClassSkill(name)}
+                title={canRoll ? '本职能力（编辑等级时可修改）' : '点击切换本职能力'}
+            >{isClassSkill ? '✓本职' : '本职'}</button>}
+        </>);
     };
 
     const renderSkillGroup = (title: string, skills: string[]) => (
@@ -104,21 +101,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                     <div key={skill}
                         className={`skill-row flex group items-center py-[1px] pl-1 pr-1 min-w-0 ${selectedSkill === skill ? 'bg-[#f6f1d3]' : 'hover:bg-[#f6f1d3]/50'}`}
                     >
-                        <button
-                            className={`w-4 h-4 flex items-center justify-center rounded shrink-0 mr-0.5 opacity-40 hover:opacity-100 hover:bg-[#daaa39] hover:text-white transition-all text-xs ${selectedSkill === skill ? 'opacity-100 text-[#b54a22]' : 'text-[#daaa39]'}`}
-                            disabled={isRolling}
-                            onClick={() => {
-                                setSelectedSkill(skill);
-                                setDiceResult(null);
-                                setSpentPoints(0);
-                            }}
-                            aria-label={`查看${getSkillLabel(skill)}详情与检定`} title="查看详情与检定"
-                        >
-                            🎲
-                        </button>
-                        <span className="flex-1 min-w-0 leading-none truncate flex items-center text-[12px]">
-                            {renderSkillName(skill)}
-                        </span>
+                        {renderSkillName(skill)}
                         <input
                             aria-label={`${getSkillLabel(skill)}点数`} inputMode="numeric" type="number" min={0} max={99} disabled={isRolling} value={(canRoll ? pool : level)(data, skill)}
                             onChange={e => handleSkill(skill, e.target.value)}
