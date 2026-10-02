@@ -1,9 +1,10 @@
+import { DRAFT_KEY, BACKUP_PREFIX, saveWithBackup, listCharacters } from './data/storage';
 import { createPresetSave } from './data/presets';
 import type { PresetCharacter } from './data/presets';
 import PresetPicker from './components/PresetPicker';
 import { normalizeCharacter, level } from './data/character';
 import type { Character } from './data/character';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { FileText, Image as ImageIcon, Save, Download, Users } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import {
@@ -186,8 +187,44 @@ function App() {
   }, [data, invPointsTotal, genPointsTotal, isCompleted, frozenStats, variant.name]);
 
   // === Save/Load functionality ===
-  const [savedCharacters, setSavedCharacters] = useState<string[]>(() => { try { return Object.keys(localStorage).filter(k => k.startsWith('toc_char_')).map(k => k.slice(9)); } catch { return []; } });
+  const [initialStorage] = useState(() => {
+    try { return { names: listCharacters(localStorage), draft: localStorage.getItem(DRAFT_KEY), error: '' }; }
+    catch { return { names: [] as string[], draft: null, error: '浏览器存储无法读取，不能确认是否存在存档。请使用原来的设备和浏览器，或导入 JSON 备份。' }; }
+  });
+  const [savedCharacters, setSavedCharacters] = useState<string[]>(initialStorage.names);
+  const [pendingDraft, setPendingDraft] = useState<string | null>(initialStorage.draft);
+  const [storageError, setStorageError] = useState(initialStorage.error);
+  const [draftStatus, setDraftStatus] = useState('');
+  const lastDraft = useRef<string | null>(null);
   const settings = { variantIdx, playerCount, customInvPoints, customGenPoints };
+
+  const draftPayload = JSON.stringify({ version: 2, settings, data, isCompleted, frozenStats });
+  useEffect(() => {
+    if (lastDraft.current === null) { lastDraft.current = draftPayload; return; }
+    if (pendingDraft || lastDraft.current === draftPayload) return;
+    setDraftStatus('正在保存草稿…');
+    const persist = () => {
+      try {
+        localStorage.setItem(DRAFT_KEY, draftPayload);
+        lastDraft.current = draftPayload;
+        setDraftStatus('草稿已自动保存到此浏览器');
+        setStorageError('');
+      } catch {
+        setDraftStatus('草稿自动保存失败');
+        setStorageError('浏览器存储不可用或空间不足，当前修改尚未保存。请立即导出 JSON 备份。');
+      }
+    };
+    const onHidden = () => { if (document.visibilityState === 'hidden') persist(); };
+    const timer = window.setTimeout(persist, 500);
+    window.addEventListener('pagehide', persist);
+    document.addEventListener('visibilitychange', onHidden);
+    return () => { window.clearTimeout(timer); window.removeEventListener('pagehide', persist); document.removeEventListener('visibilitychange', onHidden); };
+  }, [draftPayload, pendingDraft]);
+
+  const refreshSaved = () => {
+    try { setSavedCharacters(listCharacters(localStorage)); setStorageError(''); }
+    catch { setStorageError('浏览器存储无法读取，不能确认是否存在存档。请勿将此提示视为存档已删除。'); }
+  };
 
   const saveCharacterUnsafe = () => {
     if (!data.name.trim()) { alert('请至少填写调查员姓名再保存！'); return; }
@@ -198,7 +235,7 @@ function App() {
     }
     const frozen = completed && !isCompleted ? { invUsed: pointStats.invUsed, genUsed: pointStats.genUsed } : frozenStats;
     const normalized = normalizeCharacter(data);
-    localStorage.setItem(`toc_char_${data.name}`, JSON.stringify({ version: 2, settings, data: normalized, isCompleted: completed, frozenStats: frozen }));
+    saveWithBackup(localStorage, data.name, JSON.stringify({ version: 2, settings, data: normalized, isCompleted: completed, frozenStats: frozen }));
     setData(normalized);
     setIsCompleted(completed);
     setFrozenStats(frozen);
@@ -229,6 +266,7 @@ function App() {
   };
   const usePreset = (preset: PresetCharacter) => {
     applySave(JSON.stringify(createPresetSave(preset)), false);
+    setPendingDraft(null);
     setShowPresets(false);
     setShowSaved(false);
     setShowOccupations(false);
@@ -238,7 +276,7 @@ function App() {
   };
 
   const loadCharacter = (charName: string) => {
-    try { const raw = localStorage.getItem(`toc_char_${charName}`); if (raw) applySave(raw); }
+    try { const raw = localStorage.getItem(`toc_char_${charName}`); if (raw) { applySave(raw); setPendingDraft(null); } else alert('未找到该存档，请检查是否使用原来的浏览器。'); }
     catch { alert('读取失败：存档格式无效或浏览器存储不可用。'); }
   };
 
@@ -448,12 +486,12 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
           <button onClick={() => setShowPresets(true)} className="mobile-primary flex items-center gap-2 rounded-md bg-[#cca74b] px-4 py-2 text-sm font-bold text-[#1e1c18] shadow-sm hover:bg-[#d4b563]" aria-haspopup="dialog"><Users size={16} />使用预设角色</button>
           <button className="mobile-more" aria-expanded={showMobileTools} onClick={() => setShowMobileTools(value => !value)}>{showMobileTools ? '收起操作' : '更多操作'}</button>
           <div className="group relative">
-            <button onClick={() => setShowSaved(value => !value)} aria-expanded={showSaved} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
+            <button onClick={() => { refreshSaved(); setShowSaved(value => !value); }} aria-expanded={showSaved} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
               <Download size={14} /> 读取本地
             </button>
             <div className={`absolute right-0 top-full mt-1 bg-[#1e1c18] border border-[#cca74b] rounded-md shadow-lg py-2 min-w-[150px] z-50 ${showSaved ? 'block' : 'hidden'}`}>
               <div className="px-3 pb-1 mb-1 border-b border-stone-700 text-xs text-stone-400 font-bold">本地存卡记录</div>
-              {savedCharacters.length === 0 ? (
+              {storageError ? <p className="px-3 py-2 text-xs text-red-300 max-w-[260px]">{storageError}</p> : savedCharacters.length === 0 ? (
                 <div className="px-3 py-1 text-xs text-stone-500 italic">暂无记录</div>
               ) : (
                 savedCharacters.map(char => (
@@ -463,6 +501,15 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
                     onClick={() => { loadCharacter(char); setShowSaved(false); }}
                   >
                     {char}
+                    <button className="block mt-1 text-xs underline text-stone-400" onClick={event => {
+                      event.stopPropagation();
+                      try {
+                        const backup = localStorage.getItem(`${BACKUP_PREFIX}${char}`);
+                        if (!backup) { alert('该角色暂时没有上一版备份。'); return; }
+                        applySave(backup, false); setPendingDraft(null); setShowSaved(false);
+                        setDraftStatus('已载入上一版备份，正式存档未改变。可另取姓名保存或导出 JSON。');
+                      } catch { alert('备份读取失败：格式无效或浏览器存储不可用。'); }
+                    }}>读取上一版备份</button>
                   </div>
                 ))
               )}
@@ -473,7 +520,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
             {!isCompleted && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}
           </button>
 
-          <label className="px-3 py-2 border border-stone-700 rounded-md text-xs cursor-pointer">导入 JSON<input type="file" accept=".json,application/json" className="hidden" onChange={async e => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { applySave(await file.text()); } catch { alert('导入失败：存档格式无效。'); } }} /></label>
+          <label className="px-3 py-2 border border-stone-700 rounded-md text-xs cursor-pointer">导入 JSON<input type="file" accept=".json,application/json" className="hidden" onChange={async e => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { applySave(await file.text()); setPendingDraft(null); } catch { alert('导入失败：存档格式无效。'); } }} /></label>
           <button disabled={!isCompleted} onClick={() => { if (confirm('返回建卡修改能力等级？当前能力池将重置，请先保存或导出备份。')) { setIsCompleted(false); setData(prev => ({ ...prev, pools: {} })); } }} className="px-3 py-2 border border-stone-700 rounded-md text-xs disabled:opacity-50">编辑等级</button>
           <button onClick={exportJSON} className="px-3 py-2 border border-stone-700 rounded-md text-xs" title="完整存档备份">JSON</button>
           <button onClick={() => { if (confirm('恢复所有能力池至能力等级？')) setData(prev => ({ ...prev, pools: {} })); }} disabled={!isCompleted} className="px-3 py-2 border border-stone-700 rounded-md text-xs disabled:opacity-50">恢复能力池</button>
@@ -493,10 +540,25 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
         {([['info', '角色资料'], ['skills', '能力点数'], ['memo', '装备笔记'], ['guide_rules', '指南规则']] as const).map(([tab, label]) => <button key={tab} aria-current={activeTab === tab ? 'page' : undefined} onClick={() => { setActiveTab(tab); setShowMobileTools(false); window.scrollTo({ top: 0, behavior: 'instant' }); }}>{label}</button>)}
       </nav>
 
+      {pendingDraft && <section className="mx-auto max-w-[1100px] m-4 p-4 border border-[#cca74b] rounded bg-[#2c2923]" aria-label="恢复自动草稿">
+        <p>发现上次编辑的自动草稿。恢复后可继续编辑，正式存档不会被覆盖。</p>
+        <div className="flex flex-wrap gap-3 mt-3">
+          <button className="min-h-[44px] px-4 rounded bg-[#cca74b] text-stone-900" onClick={() => {
+            try { applySave(pendingDraft, false); setPendingDraft(null); setDraftStatus('已恢复上次草稿'); }
+            catch { setStorageError('自动草稿格式无法读取，原始记录已保留。可以从「读取本地」加载正式存档。'); }
+          }}>恢复上次草稿</button>
+          <button className="min-h-[44px] px-4 border rounded" onClick={() => {
+            saveAs(new Blob([pendingDraft], { type: 'application/json' }), 'TOC自动草稿备份.json');
+          }}>下载草稿备份</button>
+          <button className="min-h-[44px] px-4 border rounded" onClick={() => { setPendingDraft(null); }}>开始新角色</button>
+        </div>
+      </section>}
+      {(storageError || draftStatus) && <p role={storageError ? 'alert' : 'status'} className={`mx-auto max-w-[1100px] px-4 py-2 text-sm ${storageError ? 'text-red-300' : 'text-stone-400'}`}>{storageError || draftStatus}</p>}
       <div className="max-w-[1240px] mx-auto pb-12">
         {/* Sheet Container */}
         <div className="flex justify-center overflow-x-auto px-4 pb-8 relative">
           <div
+                        inert={Boolean(pendingDraft)}
                         className="live-sheet w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
             style={{
               backgroundColor: '#faf8f2',

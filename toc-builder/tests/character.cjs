@@ -64,3 +64,25 @@ for (const preset of PRESET_CHARACTERS) {
 assert.equal(createPresetSave(PRESET_CHARACTERS[1]).data.sanity, 12);
 assert.equal(createPresetSave(PRESET_CHARACTERS[2]).data.sanity, 12);
 console.log('通过：五张预设源文件一致性、满池跑团状态、独立副本、重新载入与导出往返。');
+
+const { DRAFT_KEY, BACKUP_PREFIX, saveWithBackup, listCharacters } = load('storage');
+const store = {};
+const storage = {
+ getItem: key => store[key] ?? null,
+ setItem: (key, value) => { store[key] = value; }
+};
+saveWithBackup(storage, '原角色', '旧存档');
+assert.equal(store.toc_char_原角色, '旧存档');
+assert.equal(store[BACKUP_PREFIX + '原角色'], undefined);
+store[DRAFT_KEY] = '自动草稿';
+saveWithBackup(storage, '原角色', '新存档');
+assert.equal(store[BACKUP_PREFIX + '原角色'], '旧存档');
+assert.equal(store.toc_char_原角色, '新存档');
+assert.equal(store[DRAFT_KEY], '自动草稿');
+saveWithBackup(storage, '原角色', '新存档');
+assert.equal(store[BACKUP_PREFIX + '原角色'], '旧存档');
+assert.deepEqual(listCharacters(store), ['原角色']);
+assert.throws(() => saveWithBackup({ ...storage, setItem: () => { throw new Error('QuotaExceededError'); } }, '原角色', '失败的存档'));
+assert.equal(store.toc_char_原角色, '新存档');
+assert.equal(store[BACKUP_PREFIX + '原角色'], '旧存档');
+console.log('通过：正式存档与自动草稿隔离、同名覆盖上一版备份、重复保存保留备份、写入失败不覆盖原存档。');
