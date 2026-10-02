@@ -40,6 +40,6 @@ export default function AvatarPicker({ onClose, onUse }: Props) {
         <span className="block py-2 text-xs text-stone-300">{loading === portrait.id ? '正在载入…' : portrait.label.replace('三十年代头像 ', '头像 ')}</span>
       </button>)}
     </div>
-    <footer className="border-t border-stone-700 p-4 text-xs leading-6 text-stone-400"><p>图片来源：<a href={manifest.sourcePage} target="_blank" rel="noreferrer" className="text-[#cca74b] underline">乐博睿《克苏鲁迷踪》免费资源 · 三十年代角色头像</a>。图片随工具本地内置，版权归原权利人所有。</p><p>也可关闭此窗口，点击角色头像区域上传自定义图片。</p></footer>
+    <footer className="border-t border-stone-700 p-4 text-xs leading-6 text-stone-400"><p>图片来源：<a href={manifest.sourcePage} target="_blank" rel="noreferrer" className="text-[#cca74b] underline">乐博睿《克苏鲁迷踪》免费资源 · 三十年代角色头像</a>。图片随工具本地内置，版权归原权利人所有。若侵权请联系删除，联系方式见作者信息。</p><p>也可关闭此窗口，点击角色头像区域上传自定义图片。</p></footer>
   </dialog>;
 }

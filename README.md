@@ -113,4 +113,4 @@ toc-builder/
 
 角色资料页点击「选择内置头像」可选用 30 张三十年代角色头像，点击现有头像区域仍可上传自定义图片。资源位于 `toc-builder/public/avatars/labyrpg-1930s/`（应用目录下为 `public/avatars/labyrpg-1930s/`），随项目部署，不依赖来源网站在线。选择的头像以图片数据随角色草稿、正式存档和 JSON 导出保存。
 
-图片来源：[乐博睿《克苏鲁迷踪》免费资源](https://labyrpg.com/products/toc/resources.html)。版权及许可记录见资源目录 README.md 和 manifest.json；本次收录依据项目维护者已取得明确许可的确认，图片不属于项目代码的开放许可范围。
+图片来源：[乐博睿《克苏鲁迷踪》免费资源](https://labyrpg.com/products/toc/resources.html)。图片版权归原权利人所有，仅用于非商业角色创建与跑团交流。若侵权请联系删除，可通过不咕鸟创作交流群（261751459）联系作者。来源及文件清单见资源目录 README.md 和 manifest.json。

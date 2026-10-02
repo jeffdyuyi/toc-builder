@@ -1,6 +1,5 @@
 {
   "sourcePage": "https://labyrpg.com/products/toc/resources.html",
-  "permission": "项目维护者确认已取得明确使用许可；官网未提供可核验的公开再分发许可证。",
   "portraits": [
     {
       "id": "portrait-01",
@@ -212,5 +211,6 @@
       "sourceUrl": "https://labyrpg.com/products/toc/assets/images/-2-2-1276x1866.jpg",
       "sha256": "733e05008502877f525721da07ee3ce81e5ba1ee2c66e64fd67976956d65c3de"
     }
-  ]
+  ],
+  "copyrightNotice": "图片版权归原权利人所有。若侵权请联系删除，可通过不咕鸟创作交流群（261751459）联系作者。"
 }
