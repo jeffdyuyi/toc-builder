@@ -18,6 +18,7 @@ import MemoPage from './components/MemoPage';
 import RulesPage from './components/RulesPage';
 
 function App() {
+  const [showMobileTools, setShowMobileTools] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [characterRevision, setCharacterRevision] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -320,7 +321,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
   return (
     <div className="min-h-screen bg-[#1e1c18] font-sans text-stone-100 selection:bg-[#cca74b] selection:text-white">
       {/* 悬浮顶栏 / Sticky Header (提高了操作便捷性) */}
-      <header className="relative xl:sticky top-0 z-50 flex flex-col xl:flex-row flex-wrap gap-3 justify-between items-center bg-[#1e1c18]/90 backdrop-blur-md shadow-lg px-6 py-4 border-b border-stone-800 mb-8 w-full">
+      <header className={`app-header ${showMobileTools ? 'mobile-tools-open' : ''} relative xl:sticky top-0 z-50 flex flex-col xl:flex-row flex-wrap gap-3 justify-between items-center bg-[#1e1c18]/90 backdrop-blur-md shadow-lg px-6 py-4 border-b border-stone-800 mb-8 w-full`}>
         <div className="shrink-0 flex justify-center xl:justify-start">
           <h1
             className="whitespace-nowrap text-xl md:text-2xl leading-none font-black text-[#cca74b] tracking-[0.2em] ml-[0.2em] cursor-pointer hover:brightness-125 transition-all"
@@ -333,7 +334,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
         </div>
 
         {/* 现代优雅的活页切换卡 / Sleek Tabs */}
-        <div className="shrink-0 flex flex-wrap bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-4 border border-stone-700/50">
+        <div className="desktop-tabs shrink-0 flex flex-wrap bg-[#2c2923] p-[4px] rounded-lg mt-4 md:mt-0 shadow-inner md:mr-4 border border-stone-700/50">
           <button
             onClick={() => setActiveTab('info')}
             className={`px-4 xl:px-6 py-2 text-[14px] font-bold rounded-md flex items-center gap-2 transition-all duration-300 ${activeTab === 'info' ? 'bg-[#cca74b] text-[#1e1c18] shadow-md' : 'text-stone-400 hover:text-stone-100'}`}
@@ -361,7 +362,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
         </div>
 
         {/* Point Allocation Bar */}
-        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0 md:mr-4">
+        <div className="allocation-controls flex flex-wrap items-center gap-3 mt-4 md:mt-0 md:mr-4">
           {/* Variant Rule Select */}
           <select
             value={variantIdx}
@@ -443,8 +444,9 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
         </div>
 
         {/* 导出按钮操作区 / Action Buttons */}
-        <div className="flex flex-wrap justify-center gap-2 mt-4 md:mt-0 shrink-0">
-          <button onClick={() => setShowPresets(true)} className="flex items-center gap-2 rounded-md bg-[#cca74b] px-4 py-2 text-sm font-bold text-[#1e1c18] shadow-sm hover:bg-[#d4b563]" aria-haspopup="dialog"><Users size={16} />使用预设角色</button>
+        <div className="action-group flex flex-wrap justify-center gap-2 mt-4 md:mt-0 shrink-0">
+          <button onClick={() => setShowPresets(true)} className="mobile-primary flex items-center gap-2 rounded-md bg-[#cca74b] px-4 py-2 text-sm font-bold text-[#1e1c18] shadow-sm hover:bg-[#d4b563]" aria-haspopup="dialog"><Users size={16} />使用预设角色</button>
+          <button className="mobile-more" aria-expanded={showMobileTools} onClick={() => setShowMobileTools(value => !value)}>{showMobileTools ? '收起操作' : '更多操作'}</button>
           <div className="group relative">
             <button onClick={() => setShowSaved(value => !value)} aria-expanded={showSaved} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-[#cca74b] hover:text-[#1e1c18] border border-stone-700 hover:border-[#cca74b] rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm">
               <Download size={14} /> 读取本地
@@ -466,7 +468,7 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
               )}
             </div>
           </div>
-          <button onClick={saveCharacter} className="flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-emerald-600 hover:text-white border border-stone-700 hover:border-emerald-600 rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm relative group" title="保存在浏览器本地，完成车卡后解锁掷骰功能">
+          <button onClick={saveCharacter} className="mobile-primary flex items-center gap-1 px-3 py-2 bg-[#2c2923] hover:bg-emerald-600 hover:text-white border border-stone-700 hover:border-emerald-600 rounded-md text-stone-300 text-xs font-bold transition-all duration-300 shadow-sm relative group" title="保存在浏览器本地，完成车卡后解锁掷骰功能">
             <Save size={14} /> 本地保存
             {!isCompleted && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}
           </button>
@@ -484,13 +486,18 @@ ${Object.entries(data.pools || {}).map(([skill, value]) => `- ${skill}: ${value}
             <FileText size={14} /> MD
           </button>
         </div>
+        <p className="mobile-budget">{isCompleted ? '跑团中' : '建卡中'} · 调查 {pointStats.invUsed}/{invPointsTotal} · 一般 {pointStats.genUsed}/{genPointsTotal}</p>
+        {pointStats.warnings.length > 0 && <details className="mobile-warnings"><summary>规则提示（{pointStats.warnings.length}）</summary>{pointStats.warnings.map(warning => <p key={warning}>{warning}</p>)}</details>}
       </header>
+      <nav className="mobile-nav" aria-label="角色卡页面">
+        {([['info', '角色资料'], ['skills', '能力点数'], ['memo', '装备笔记'], ['guide_rules', '指南规则']] as const).map(([tab, label]) => <button key={tab} aria-current={activeTab === tab ? 'page' : undefined} onClick={() => { setActiveTab(tab); setShowMobileTools(false); window.scrollTo({ top: 0, behavior: 'instant' }); }}>{label}</button>)}
+      </nav>
 
       <div className="max-w-[1240px] mx-auto pb-12">
         {/* Sheet Container */}
         <div className="flex justify-center overflow-x-auto px-4 pb-8 relative">
           <div
-                        className="w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
+                        className="live-sheet w-[1100px] shrink-0 p-8 pb-12 relative font-['Noto_Serif_SC','STSong','SimSun',serif] flex flex-col gap-6 shadow-2xl"
             style={{
               backgroundColor: '#faf8f2',
               backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',

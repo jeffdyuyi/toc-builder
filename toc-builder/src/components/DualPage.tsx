@@ -14,11 +14,11 @@ export function GoldCard({ children, className = '' }: { children: ReactNode; cl
 
 export default function DualPage({ left, right }: { left: ReactNode; right: ReactNode }) {
     return (
-        <div className="flex w-full min-h-[800px]">
-            <div className="w-1/2 p-5 pr-4 border-r-2 border-[#daaa39]/30 flex flex-col gap-4">
+        <div className="dual-page flex w-full min-h-[800px]">
+            <div className="dual-left w-1/2 p-5 pr-4 border-r-2 border-[#daaa39]/30 flex flex-col gap-4">
                 {left}
             </div>
-            <div className="w-1/2 p-5 pl-4 flex flex-col gap-4">
+            <div className="dual-right w-1/2 p-5 pl-4 flex flex-col gap-4">
                 {right}
             </div>
         </div>

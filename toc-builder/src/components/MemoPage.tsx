@@ -110,7 +110,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="equipment-desktop flex-1 overflow-y-auto">
                             <table className="w-full border-collapse border border-[#daaa39] text-[13px]">
                                 <thead>
                                     <tr className="bg-[#f8f4e6] text-[#5c4a21] font-bold tracking-wider">
@@ -153,6 +153,14 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                             </table>
                         </div>
 
+                        <div className="equipment-mobile">
+                            {equipmentItems.length === 0 && <p className="py-4 text-center text-sm text-stone-500">暂无道具，点击新增或从装备库添加。</p>}
+                            {equipmentItems.map((item, index) => <article key={item.id} className="rounded border border-[#daaa39]/60 bg-white/60 p-3">
+                                <div className="mb-2 flex items-center justify-between gap-2"><h3 className="font-bold text-[#5c4a21]">道具 {index + 1}</h3><button aria-label={`删除道具${index + 1}`} onClick={() => removeItem(index)} className="rounded px-3 text-red-700">删除</button></div>
+                                <div className="grid grid-cols-2 gap-3">{([['name', '名称'], ['qty', '数量'], ['price', '价格'], ['note1', '备注1'], ['note2', '备注2']] as const).map(([field, label]) => <label key={field} className={`text-sm text-[#5c4a21] ${field === 'name' || field.startsWith('note') ? 'col-span-2' : ''}`}>{label}<input aria-label={`道具${index + 1}${label}`} inputMode={field === 'qty' ? 'numeric' : 'text'} value={item[field]} onChange={e => updateItem(index, field, e.target.value)} className="mt-1 w-full rounded border border-[#daaa39]/60 bg-transparent px-2 text-slate-800" /></label>)}</div>
+                            </article>)}
+                        </div>
+
                         <div className="mt-4 border-t border-[#daaa39]/50 pt-2 text-center">
                             <button
                                 className="text-[#5c4a21] text-xs font-bold border border-[#c89b3c] px-4 py-1.5 rounded-sm hover:bg-[#c89b3c] hover:text-white transition-all shadow-sm active:translate-y-px"
@@ -172,13 +180,13 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                             <div className="flex gap-1">
                                 <button
                                     className="w-7 h-7 flex flex-col items-center justify-center text-[#5c4a21] border border-[#daaa39] rounded hover:bg-[#cca74b] hover:text-white transition-colors border-b-[2px] active:border-b active:translate-y-[1px]"
-                                    title="加粗" onClick={() => execFormat('bold')}
+                                    aria-label="加粗" title="加粗" onClick={() => execFormat('bold')}
                                 >
                                     <Bold size={14} strokeWidth={3} />
                                 </button>
                                 <button
                                     className="w-7 h-7 flex flex-col items-center justify-center text-[#5c4a21] border border-[#daaa39] rounded hover:bg-[#cca74b] hover:text-white transition-colors border-b-[2px] active:border-b active:translate-y-[1px]"
-                                    title="斜体" onClick={() => execFormat('italic')}
+                                    aria-label="斜体" title="斜体" onClick={() => execFormat('italic')}
                                 >
                                     <Italic size={14} strokeWidth={3} />
                                 </button>
@@ -191,7 +199,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                             onInput={handleMemoInput}
                             onBlur={handleMemoInput}
                             className="flex-1 w-full bg-transparent outline-none p-1 text-slate-800 text-[14px] leading-relaxed font-serif focus:bg-[#f6f1d3]/80 transition-all overflow-y-auto"
-                            style={{ minHeight: '100%' }}
+                            role="textbox" aria-label="战役备忘录内容" aria-multiline="true" style={{ minHeight: '280px' }}
                         />
                     </GoldCard>
                 }
@@ -201,19 +209,19 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
             {
                 showEquipmentModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowEquipmentModal(false)}>
-                        <div className="bg-[#faf8f2] border-[2px] border-[#daaa39] max-w-4xl w-full h-[80vh] rounded-sm shadow-xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="equipment-modal bg-[#faf8f2] border-[2px] border-[#daaa39] max-w-4xl w-full h-[80vh] rounded-sm shadow-xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
                             <div className="flex justify-between items-center border-b-[2px] border-[#daaa39] bg-[#f8f4e6] px-5 py-3 shrink-0">
                                 <h3 className="font-bold text-[#5c4a21] text-lg tracking-widest flex items-center gap-2">
                                     <span className="text-xl">🛒</span> 装备与财物选购
                                 </h3>
-                                <button className="text-[#c89b3c] hover:text-[#8b6d2a] font-bold text-xl leading-none transition-colors" onClick={() => setShowEquipmentModal(false)}>
+                                <button aria-label="关闭装备库" className="text-[#c89b3c] hover:text-[#8b6d2a] font-bold text-xl leading-none transition-colors" onClick={() => setShowEquipmentModal(false)}>
                                     <X size={24} />
                                 </button>
                             </div>
 
-                            <div className="flex flex-1 overflow-hidden">
+                            <div className="equipment-browser flex flex-1 overflow-hidden">
                                 {/* Categories Sidebar */}
-                                <div className="w-48 border-r border-[#daaa39] bg-white/50 overflow-y-auto shrink-0 flex flex-col">
+                                <div className="equipment-categories w-48 border-r border-[#daaa39] bg-white/50 overflow-y-auto shrink-0 flex flex-col">
                                     {EQUIPMENT_LIST.map(cat => (
                                         <button
                                             key={cat.category}
@@ -226,7 +234,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                                 </div>
 
                                 {/* Items List */}
-                                <div className="flex-1 overflow-y-auto p-4 bg-white/30">
+                                <div className="equipment-catalog flex-1 overflow-y-auto p-4 bg-white/30">
                                     {EQUIPMENT_LIST.find(c => c.category === activeEqCategory)?.items.map((item, idx) => (
                                         <div key={idx} className="mb-3 border border-[#daaa39]/50 rounded bg-white hover:border-[#c89b3c] hover:shadow-md transition-all group flex flex-col sm:flex-row items-stretch overflow-hidden">
                                             <div className="p-3 flex-1 flex flex-col justify-center">
@@ -252,7 +260,7 @@ export default function MemoPage({ data, setData }: MemoPageProps) {
                                                 title="加入购物清单"
                                             >
                                                 <Plus size={20} className="sm:mb-1" />
-                                                <span className="hidden sm:inline">添加</span>
+                                                <span>添加</span>
                                             </button>
                                         </div>
                                     ))}

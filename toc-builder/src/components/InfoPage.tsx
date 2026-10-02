@@ -66,8 +66,15 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
             );
         }
         const isClickable = ['健康', '心智', '坚毅'].includes(title);
-        return (
-            <div className="flex items-stretch border-t border-l border-[#cca74b] bg-transparent text-slate-800">
+        const skill = ({ sanity: '心智(9)', stability: '坚毅(9)', health: '健康(9)' } as Record<string, string>)[field];
+        return (<>
+            <div className="mobile-stat">
+                <button onClick={() => openInfo(title)}>{title}</button>
+                <button aria-label={`减少${title}`} onClick={() => setData(prev => updateAbility(prev, skill, current - 1, isCompleted))}>−</button>
+                <input aria-label={`当前${title}`} type="number" inputMode="numeric" min={isCompleted && field !== 'sanity' ? -12 : 0} max={isCompleted ? level(data, skill) : 99} value={current} onChange={e => setData(prev => updateAbility(prev, skill, Number(e.target.value), isCompleted))} />
+                <button aria-label={`增加${title}`} onClick={() => setData(prev => updateAbility(prev, skill, current + 1, isCompleted))}>＋</button>
+            </div>
+            <div className="desktop-stat flex items-stretch border-t border-l border-[#cca74b] bg-transparent text-slate-800">
                 <div
                     className={`flex items-center justify-center border-r border-b border-[#cca74b] bg-[#f8f4e6] font-bold text-[#5c4a21] text-[13px] shrink-0 w-[64px] tracking-widest ${isClickable ? 'cursor-pointer hover:bg-[#cca74b] hover:text-white transition-colors' : ''}`}
                     onClick={() => isClickable ? openInfo(title) : undefined}
@@ -75,7 +82,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                     {title}{footnote && <sup className={`text-[10px] cursor-help ml-[2px] ${isClickable ? 'text-inherit opacity-80' : 'text-[#c89b3c]'}`} title={getRuleNote(footnote)}>{footnote}</sup>}
                 </div>
                 <div className="flex flex-wrap flex-1">{cells}</div>
-            </div>
+            </div></>
         );
     };
 
@@ -91,7 +98,8 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                 <ul className="absolute z-50 left-0 right-0 top-[100%] mt-1 max-h-[220px] overflow-y-auto bg-[#faf8f2] border-[2px] border-[#daaa39] shadow-lg rounded-sm text-sm">
                     {items.map(item => (
                         <li key={item.key}
-                            onMouseDown={e => { e.preventDefault(); item.onSelect(); setOpen(false); }}
+                            onPointerDown={e => e.preventDefault()}
+                            onClick={() => { item.onSelect(); setOpen(false); }}
                             className="px-3 py-1.5 text-slate-800 hover:bg-[#cca74b] hover:text-white cursor-pointer font-bold transition-colors"
                         >{item.label}</li>
                     ))}
@@ -113,7 +121,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                     <>
                         {/* Portrait & Basic Info */}
                         <GoldCard className="p-4">
-                            <div className="flex gap-3">
+                            <div className="info-basic flex gap-3">
                                 <div className="w-[120px] shrink-0 flex flex-col items-center">
                                     <div className="w-full min-h-[140px] border-[2px] border-[#daaa39] bg-white/40 shadow-inner flex flex-col group relative">
                                         <label className="flex-1 cursor-pointer overflow-hidden relative flex flex-col items-center justify-center w-full">
@@ -133,7 +141,7 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                                         />
                                     </div>
                                 </div>
-                                <div className="flex-1 flex flex-col justify-between space-y-[4px]">
+                                <div className="min-w-0 flex-1 flex flex-col justify-between space-y-[4px]">
                                     <div className="flex text-[14px] items-center">
                                         <span className={labelCls}>调查员：</span>
                                         <input type="text" name="name" value={data.name} onChange={handleInput} className={inputCls} />
@@ -212,21 +220,21 @@ export default function InfoPage({ data, setData, showOccupations, setShowOccupa
                         </GoldCard>
 
                         {/* Source of Stability + Contacts — placed second */}
-                        <div className="flex gap-3">
+                        <div className="info-contacts flex gap-3">
                             <GoldCard className="w-[66px] shrink-0 flex flex-col">
                                 <div className="p-[4px] px-1 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[12px] tracking-widest text-center">阈值<sup className="text-[10px] cursor-help text-[#c89b3c]" title={getRuleNote('3')}>3</sup></div>
                                 <div className="flex-1 flex items-center justify-center text-3xl font-bold text-[#5c4a21] font-serif bg-white/40 shadow-inner">
                                     {hitThreshold}
                                 </div>
                             </GoldCard>
-                            <GoldCard className="flex-1 flex flex-col min-h-[90px]">
+                            <GoldCard className="contact-card min-w-0 flex-1 flex flex-col min-h-[90px]">
                                 <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center cursor-pointer hover:bg-[#cca74b] hover:text-white transition-colors" onClick={() => openInfo("坚毅之源")}>坚毅之源</div>
                                 <textarea name="sourceOfStability" value={data.sourceOfStability} onChange={handleInput}
                                     className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"
                                     placeholder="填写坚毅之源..."
                                 />
                             </GoldCard>
-                            <GoldCard className="flex-1 flex flex-col min-h-[90px]">
+                            <GoldCard className="contact-card min-w-0 flex-1 flex flex-col min-h-[90px]">
                                 <div className="p-[4px] px-2 font-bold text-[#5c4a21] border-b border-[#daaa39] bg-[#f8f4e6] text-[13px] tracking-widest text-center">联系人</div>
                                 <textarea name="notes" value={data.notes} onChange={handleInput}
                                     className="flex-1 w-full bg-transparent outline-none p-2 resize-none text-slate-800 text-[13px] leading-snug focus:bg-[#f6f1d3]/80 transition-all font-serif"

@@ -1,6 +1,6 @@
 import { pool, level, updateAbility } from '../data/character';
 import type { Character, CharacterSetter } from '../data/character';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import DualPage, { GoldCard } from './DualPage';
 import { ACADEMIC_SKILLS, SOCIAL_SKILLS, TECH_SKILLS, GENERAL_SKILLS, OCCUPATION_DESC, RULES_NOTES, INVESTIGATION_SKILLS, NON_CLASS_ELIGIBLE } from '../data/constants';
 import { SKILL_DESCRIPTIONS } from '../data/skillDescriptions';
@@ -13,11 +13,21 @@ interface SkillsPageProps {
 }
 
 export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = true }: SkillsPageProps) {
+    const mobileDialog = useRef<HTMLDialogElement>(null);
     const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
     const [spentPoints, setSpentPoints] = useState<number>(0);
     const [lastSpentPoints, setLastSpentPoints] = useState<number>(0);
     const [diceResult, setDiceResult] = useState<number | null>(null);
     const [isRolling, setIsRolling] = useState(false);
+
+    useEffect(() => {
+        const media = window.matchMedia('(max-width: 767px)');
+        const dialog = mobileDialog.current;
+        const sync = () => { if (!dialog) return; if (media.matches && selectedSkill) { if (!dialog.open) dialog.showModal(); } else dialog.close(); };
+        sync();
+        media.addEventListener('change', sync);
+        return () => { media.removeEventListener('change', sync); dialog?.close(); };
+    }, [selectedSkill]);
 
     const handleSkill = (skillName: string, value: string) => {
         if (!/^\d*$/.test(value)) return;
@@ -92,7 +102,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
             <div className="p-1 space-y-0">
                 {skills.map(skill => (
                     <div key={skill}
-                        className={`flex group items-center py-[1px] pl-1 pr-1 min-w-0 ${selectedSkill === skill ? 'bg-[#f6f1d3]' : 'hover:bg-[#f6f1d3]/50'}`}
+                        className={`skill-row flex group items-center py-[1px] pl-1 pr-1 min-w-0 ${selectedSkill === skill ? 'bg-[#f6f1d3]' : 'hover:bg-[#f6f1d3]/50'}`}
                     >
                         <button
                             className={`w-4 h-4 flex items-center justify-center rounded shrink-0 mr-0.5 opacity-40 hover:opacity-100 hover:bg-[#daaa39] hover:text-white transition-all text-xs ${selectedSkill === skill ? 'opacity-100 text-[#b54a22]' : 'text-[#daaa39]'}`}
@@ -102,7 +112,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                                 setDiceResult(null);
                                 setSpentPoints(0);
                             }}
-                            title="查看详情与检定"
+                            aria-label={`查看${getSkillLabel(skill)}详情与检定`} title="查看详情与检定"
                         >
                             🎲
                         </button>
@@ -110,7 +120,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                             {renderSkillName(skill)}
                         </span>
                         <input
-                            type="number" min={0} max={99} disabled={isRolling} value={(canRoll ? pool : level)(data, skill)}
+                            aria-label={`${getSkillLabel(skill)}点数`} inputMode="numeric" type="number" min={0} max={99} disabled={isRolling} value={(canRoll ? pool : level)(data, skill)}
                             onChange={e => handleSkill(skill, e.target.value)}
                             className="w-8 shrink-0 bg-transparent border-b border-[#e5cd8d] outline-none text-center text-slate-800 text-xs py-[1px] focus:bg-[#f6f1d3] focus:border-[#8b6d2a] transition-all ml-1"
                         />
@@ -125,7 +135,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
             left={
                 <GoldCard className="flex flex-col h-full overflow-hidden">
                     {/* Split into two main columns for compactness */}
-                    <div className="flex flex-1 text-[12px] overflow-hidden">
+                    <div className="skill-columns flex flex-1 text-[12px] overflow-hidden">
                         <div className="flex-1 border-r border-[#daaa39] flex flex-col">
                             {renderSkillGroup('学术能力', ACADEMIC_SKILLS)}
                         </div>
@@ -141,7 +151,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                 </GoldCard>
             }
             right={
-                <GoldCard className="p-6 flex flex-col h-full bg-white/80">
+                <dialog ref={mobileDialog} className="skill-dialog" aria-label={selectedSkill ? `${getSkillLabel(selectedSkill)}详情与检定` : '能力说明'} onCancel={() => setSelectedSkill(null)}><GoldCard className="p-6 flex flex-col h-full bg-white/80">
                     {!selectedSkill ? (
                         <div className="flex flex-col h-full bg-white/50 p-6 shadow-inner border-[2px] border-[#daaa39] rounded">
                             <h2 className="text-xl font-bold text-[#5c4a21] border-b border-[#daaa39] pb-2 mb-4 tracking-widest text-center">规则备注</h2>
@@ -159,7 +169,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                         </div>
                     ) : (
                         <div className="flex flex-col h-full">
-                            <div className="border-b-2 border-[#daaa39] pb-3 mb-4 flex justify-between items-center">
+                            <div className="skill-detail-header border-b-2 border-[#daaa39] pb-3 mb-4 flex justify-between items-center">
                                 <h2 className="text-2xl font-black text-[#5c4a21] tracking-widest font-['STKaiti']">{getSkillLabel(selectedSkill)}</h2>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-3">
@@ -186,7 +196,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                                             setDiceResult(null);
                                             setSpentPoints(0);
                                         }}
-                                        title="关闭，返回规则备注"
+                                        aria-label="关闭能力详情" title="关闭，返回规则备注"
                                     >
                                         ×
                                     </button>
@@ -272,7 +282,7 @@ export default function SkillsPage({ data, setData, toggleClassSkill, canRoll = 
                             </div>
                         </div>
                     )}
-                </GoldCard>
+                </GoldCard></dialog>
             }
         />
     );
